@@ -14,5 +14,5 @@ WORKDIR /dotnetapp/HiP-Achievements
 EXPOSE 5000
 
 RUN dotnet restore --no-cache
-
+RUN chmod +x /dotnetapp/HiP-Achievements/run.sh
 CMD /dotnetapp/HiP-Achievements/run.sh
