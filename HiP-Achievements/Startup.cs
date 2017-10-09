@@ -91,7 +91,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             // CacheDatabaseManager should start up immediately (not only when injected into a controller or
             // something), so we manually request an instance here
-            app.ApplicationServices.GetService<CacheDatabaseManager>();
+            //app.ApplicationServices.GetService<CacheDatabaseManager>();
 
             //// Use CORS (important: must be before app.UseMvc())
             //app.UseCors(builder =>

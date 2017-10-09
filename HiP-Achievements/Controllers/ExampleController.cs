@@ -14,12 +14,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EventStoreClient _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly EntityIndex _entityIndex;
- 
-        
-        public ExampleController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache)
+
+
+        public ExampleController(/*EventStoreClient eventStore, CacheDatabaseManager db,*/ InMemoryCache cache)
         {
-            _eventStore = eventStore;
-            _db = db;
+            //_eventStore = eventStore;
+            //_db = db;
             _entityIndex = cache.Index<EntityIndex>();
         }
 
@@ -28,7 +28,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         public IActionResult Get()
         {
             return Ok();
-        }     
+        }
 
     }
 }
