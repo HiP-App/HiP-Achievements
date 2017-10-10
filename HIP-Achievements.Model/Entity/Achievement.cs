@@ -26,6 +26,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 
     public enum AchievementType
     {
-        ExhibitVisisted, RouteFinished
+        ExhibitVisited, RouteFinished
     }
 }

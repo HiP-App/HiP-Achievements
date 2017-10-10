@@ -48,7 +48,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 ImageUrl = "http://sample.image",
                 NextId = 2,
                 Status = AchievementStatus.Published,
-                Type = AchievementType.ExhibitVisisted
+                Type = AchievementType.ExhibitVisited
             };
             var achievement2 = new AchievementResult
             {
@@ -58,7 +58,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 ImageUrl = "http://sample.image",
                 NextId = 3,
                 Status = AchievementStatus.Published,
-                Type = AchievementType.ExhibitVisisted
+                Type = AchievementType.ExhibitVisited
             };
             var achievement3 = new AchievementResult
             {
@@ -68,7 +68,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 ImageUrl = "http://sample.image",
                 NextId = -1,
                 Status = AchievementStatus.Published,
-                Type = AchievementType.ExhibitVisisted
+                Type = AchievementType.ExhibitVisited
             };
             var achievement4 = new AchievementResult
             {
