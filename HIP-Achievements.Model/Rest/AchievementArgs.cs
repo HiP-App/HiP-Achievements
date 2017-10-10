@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
