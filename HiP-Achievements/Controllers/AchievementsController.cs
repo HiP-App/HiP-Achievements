@@ -78,7 +78,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 ImageUrl = "http://sample.image",
                 NextId = -1,
                 Status = AchievementStatus.Unpublished,
-                Type = AchievementType.ExhibitVisisted
+                Type = AchievementType.RouteFinished
             };
 
             var achievements = new[] { achievement1, achievement2, achievement3, achievement4 };
