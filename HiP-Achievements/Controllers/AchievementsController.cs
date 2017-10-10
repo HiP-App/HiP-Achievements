@@ -28,7 +28,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _entityIndex = cache.Index<EntityIndex>();
         }
 
-        [HttpGet]
+        [HttpGet("ids")]
         [ProducesResponseType(200)]
         public IActionResult GetAllAchievements()
         {
