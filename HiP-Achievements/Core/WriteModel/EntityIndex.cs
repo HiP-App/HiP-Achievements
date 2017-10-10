@@ -5,7 +5,6 @@ using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
