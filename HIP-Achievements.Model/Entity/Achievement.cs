@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
@@ -17,15 +18,28 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         public string ImageUrl { get; set; }
 
         public int NextId { get; set; }
+
+        public Achievement()
+        {
+        }
+
+        public Achievement(AchievementArgs args)
+        {
+            Type = args.Type;
+            Status = args.Status;
+            Description = args.Description;
+            NextId = args.NextId;
+            Title = args.Title;
+        }
     }
 
     public enum AchievementStatus
     {
-        Published, Unpublished
+        Unpublished, Published
     }
 
     public enum AchievementType
     {
-        ExhibitVisisted, RouteFinished
+        ExhibitVisited, RouteFinished
     }
 }

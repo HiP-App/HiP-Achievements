@@ -35,7 +35,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
             Type = a.Type;
             Status = a.Status;
             Title = a.Title;
-            Description = Description;
+            Description = a.Description;
             ImageUrl = a.ImageUrl;
             NextId = a.NextId;
         }

@@ -4,6 +4,9 @@ using Microsoft.Extensions.Options;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
 {
@@ -44,9 +47,20 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
         {
             switch (ev)
             {
-              
+                case AchievementCreated e:
+                    var newAchievement = new Achievement(e.Properties)
+                    {
+                        Id = e.Id,
+                        UserId = e.UserId,
+                        Timestamp = e.Timestamp
+                    };
+
+                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).InsertOne(newAchievement);
+                    break;
+
+
             }
 
-        }      
+        }
     }
 }
