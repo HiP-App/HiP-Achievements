@@ -45,7 +45,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 Id = 1,
                 Description = "Visit 10 exhibits to get this achievement",
                 Title = "Visit 10 exhibits",
-                ImageUrl = "http://sample.image",
                 NextId = 2,
                 Status = AchievementStatus.Published,
                 Type = AchievementType.ExhibitVisited
@@ -55,7 +54,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 Id = 2,
                 Description = "Visit 20 exhibits to get this achievement",
                 Title = "Visit 20 exhibits",
-                ImageUrl = "http://sample.image",
                 NextId = 3,
                 Status = AchievementStatus.Published,
                 Type = AchievementType.ExhibitVisited
@@ -65,7 +63,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 Id = 3,
                 Description = "Visit 30 exhibits to get this achievement",
                 Title = "Visit 40 exhibits",
-                ImageUrl = "http://sample.image",
                 NextId = -1,
                 Status = AchievementStatus.Published,
                 Type = AchievementType.ExhibitVisited
@@ -75,7 +72,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 Id = 1,
                 Description = "Visit all exhibits on the Karls Route to get this achievement",
                 Title = "Finish Karls Route",
-                ImageUrl = "http://sample.image",
                 NextId = -1,
                 Status = AchievementStatus.Unpublished,
                 Type = AchievementType.RouteFinished
