@@ -7,6 +7,7 @@ using MongoDB.Driver;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
+using System.Linq;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
 {
@@ -58,7 +59,19 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     _db.GetCollection<Achievement>(ResourceType.Achievement.Name).InsertOne(newAchievement);
                     break;
 
-
+                case AchievementDeleted e:
+                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).DeleteOne(a => a.Id == e.Id);
+                    break;
+                case AchievementUpdated e:
+                    var originalAchievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().First(a => a.Id == e.Id);
+                    var updatedAchievement = new Achievement(e.Properties)
+                    {
+                        Timestamp = e.Timestamp,
+                        UserId = originalAchievement.UserId,
+                        Id = e.Id
+                    };
+                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
+                    break;
             }
 
         }

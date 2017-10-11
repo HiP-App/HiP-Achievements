@@ -18,6 +18,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public string Description { get; set; }
         
-        public int NextId { get; set; }
+        public int? NextId { get; set; }
     }
 }

@@ -76,5 +76,51 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return Created($"{Request.Scheme}://{Request.Host}/api/Achievements/{ev.Id}", ev.Id);
         }
 
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(204)]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAsync(int id, [FromBody] AchievementArgs args)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+                return NotFound();
+
+            var ev = new AchievementUpdated()
+            {
+                Id = id,
+                Properties = args,
+                UserId = User.Identity.GetUserIdentity(),
+                Timestamp = DateTime.Now
+            };
+
+            await _eventStore.AppendEventAsync(ev);
+            return NoContent();
+        }
+
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(204)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+                return NotFound();
+
+            var ev = new AchievementDeleted()
+            {
+                Id = id,
+                UserId = User.Identity.GetUserIdentity(),
+                Timestamp = DateTime.Now
+            };
+
+            await _eventStore.AppendEventAsync(ev);
+            return NoContent();
+        }
     }
 }
