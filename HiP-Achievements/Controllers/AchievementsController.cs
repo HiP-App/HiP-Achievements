@@ -40,11 +40,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return Ok(achievements);
         }
 
-        [ProducesResponseType(404)]
-        [ProducesResponseType(typeof(AchievementResult), 200)]
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(AchievementResult), 200)]
+        [ProducesResponseType(404)]
         public IActionResult GetAchievementById(int id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
 
@@ -76,10 +78,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return Created($"{Request.Scheme}://{Request.Host}/api/Achievements/{ev.Id}", ev.Id);
         }
 
+        [HttpPut("{id}")]
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [ProducesResponseType(204)]
-        [HttpPut("{id}")]
         public async Task<IActionResult> PutAsync(int id, [FromBody] AchievementArgs args)
         {
             if (!ModelState.IsValid)
