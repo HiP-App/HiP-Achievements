@@ -30,6 +30,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         }
     }
 
+    /// <remark>
+    ///  If Changed, add to <see cref="AchievementQueryStatus"/> 
+    /// </remark>
     public enum AchievementStatus
     {
         Unpublished, Published

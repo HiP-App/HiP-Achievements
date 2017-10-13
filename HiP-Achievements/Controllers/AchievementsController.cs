@@ -34,14 +34,24 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]
-        public IActionResult GetAllAchievements()
+        public IActionResult GetAllAchievements(AchievementQueryStatus status = AchievementQueryStatus.Published)
         {
-            var achievements = _entityIndex.AllIds(ResourceType.Achievement);
+            bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User.Identity, status);
+            var userIdendity = User.Identity.GetUserIdentity();
+            Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
+            var query = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+            var achievements = query.FilterIf(!isAllowedGetAll, x =>
+            ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == userIdendity))
+            .FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus)
+            .Select(x => x.Id)
+            .ToList();
             return Ok(achievements);
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AchievementResult), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         public IActionResult GetAchievementById(int id)
         {
@@ -49,6 +59,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 return BadRequest(ModelState);
 
             var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+
+            if (!UserPermissions.IsAllowedToGet(User.Identity, result.Status, result.UserId))
+                return Forbid();
 
             if (result == null)
             {
@@ -61,10 +74,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
         public async Task<IActionResult> PostAsync([FromBody] AchievementArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
+                return Forbid();
 
             var ev = new AchievementCreated
             {
@@ -81,6 +98,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
         [ProducesResponseType(404)]
         public async Task<IActionResult> PutAsync(int id, [FromBody] AchievementArgs args)
         {
@@ -89,6 +107,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             if (!_entityIndex.Exists(ResourceType.Achievement, id))
                 return NotFound();
+
+            if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
+                return Forbid();
 
             var ev = new AchievementUpdated()
             {
@@ -102,10 +123,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return NoContent();
         }
 
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(204)]
         [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             if (!ModelState.IsValid)
@@ -113,6 +135,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             if (!_entityIndex.Exists(ResourceType.Achievement, id))
                 return NotFound();
+
+            var achievment = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            if (!UserPermissions.IsAllowedToDelete(User.Identity, achievment.Status, achievment.UserId))
+                return Forbid();
 
             var ev = new AchievementDeleted()
             {
