@@ -41,11 +41,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
 
             return null;
         }
-        public int Id(ResourceType entityType, IIdentity UserId)
+        public int Id(ResourceType entityType, IIdentity userId)
         {
             var info = GetOrCreateEntityTypeInfo(entityType);
 
-            return info.Entities.FirstOrDefault(x => x.Value.UserId == UserId.GetUserIdentity()).Key;
+            return info.Entities.FirstOrDefault(x => x.Value.UserId == userId.GetUserIdentity()).Key;
         }
         /// <summary>
         /// Determines whether an entity with the specified type and ID exists.
@@ -64,9 +64,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
             switch (e)
             {
                 case IUpdateEvent ev:
+                {
+                    var owner = (ev as UserActivityBaseEvent)?.UserId;
                     lock (_lockObject)
                     {
-                        var owner = (ev as UserActivityBaseEvent)?.UserId;
                         var info = GetOrCreateEntityTypeInfo(ev.GetEntityType());
                         if (!info.Entities.Any(x => x.Value.UserId == owner))
                         {
@@ -74,6 +75,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
                             info.Entities.Add(ev.Id, new EntityInfo { UserId = owner });
                         }
                     }
+                }
                     break;
 
                 case IDeleteEvent ev:

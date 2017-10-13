@@ -1,12 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
-using PaderbornUniversity.SILab.Hip.EventSourcing;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 
@@ -16,18 +11,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class AchievementsController : Controller
     {
-        private readonly EventStoreClient _eventStore;
-        private readonly CacheDatabaseManager _db;
-        private readonly EntityIndex _entityIndex;
-
-
-        public AchievementsController(/*EventStoreClient eventStore, CacheDatabaseManager db,*/ InMemoryCache cache)
-        {
-            //_eventStore = eventStore;
-            //_db = db;
-            _entityIndex = cache.Index<EntityIndex>();
-        }
-
         [HttpGet("ids")]
         [ProducesResponseType(200)]
         public IActionResult GetAllAchievements()
@@ -36,10 +19,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         }
 
         [ProducesResponseType(404)]
+        [ProducesResponseType(400)]
         [ProducesResponseType(typeof(AchievementResult), 200)]
         [HttpGet("{id}")]
         public IActionResult GetAchievementById(int id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var achievement1 = new AchievementResult
             {
                 Id = 1,

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
+﻿namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
     public class Achievement : ContentBase
     {

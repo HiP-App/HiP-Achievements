@@ -42,11 +42,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
 
         private void ApplyEvent(IEvent ev)
         {
-            switch (ev)
-            {
-              
-            }
-
+            
         }      
     }
 }
