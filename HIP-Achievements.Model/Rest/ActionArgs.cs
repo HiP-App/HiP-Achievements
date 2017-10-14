@@ -1,8 +1,5 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 {
