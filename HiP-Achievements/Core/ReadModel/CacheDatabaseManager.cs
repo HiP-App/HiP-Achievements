@@ -8,6 +8,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using System.Linq;
+using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
 {
@@ -73,6 +74,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                         Id = e.Id
                     };
                     _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
+                    break;
+
+                case ActionCreated e:
+                    var newAction = new Action(e.Properties)
+                    {
+                        Id = e.Id,
+                        UserId = e.UserId,
+                        LastModifiedBy = e.UserId,
+                        Timestamp = e.Timestamp
+                    };
+                    _db.GetCollection<Action>(ResourceType.Action.Name).InsertOne(newAction);
                     break;
             }
 
