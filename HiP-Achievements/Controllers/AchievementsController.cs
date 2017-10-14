@@ -1,9 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
+using PaderbornUniversity.SILab.Hip.Achievements.Core;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -11,69 +20,135 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class AchievementsController : Controller
     {
-        [HttpGet("ids")]
-        [ProducesResponseType(200)]
-        public IActionResult GetAllAchievements()
+        private readonly EventStoreClient _eventStore;
+        private readonly CacheDatabaseManager _db;
+        private readonly EntityIndex _entityIndex;
+
+
+        public AchievementsController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache)
         {
-            return Ok(new List<int> { 1, 2, 3, 4 });
+            _eventStore = eventStore;
+            _db = db;
+            _entityIndex = cache.Index<EntityIndex>();
         }
 
-        [ProducesResponseType(404)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(typeof(AchievementResult), 200)]
+        [HttpGet("ids")]
+        [ProducesResponseType(200)]
+        public IActionResult GetAllAchievements(AchievementQueryStatus status = AchievementQueryStatus.Published)
+        {
+            bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User.Identity, status);
+            var userIdendity = User.Identity.GetUserIdentity();
+            Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
+            var query = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+            var achievements = query.FilterIf(!isAllowedGetAll, x =>
+            ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == userIdendity))
+            .FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus)
+            .Select(x => x.Id)
+            .ToList();
+            return Ok(achievements);
+        }
+
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(AchievementResult), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
         public IActionResult GetAchievementById(int id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var achievement1 = new AchievementResult
-            {
-                Id = 1,
-                Description = "Visit 10 exhibits to get this achievement",
-                Title = "Visit 10 exhibits",
-                NextId = 2,
-                Status = AchievementStatus.Published,
-                Type = AchievementType.ExhibitVisited
-            };
-            var achievement2 = new AchievementResult
-            {
-                Id = 2,
-                Description = "Visit 20 exhibits to get this achievement",
-                Title = "Visit 20 exhibits",
-                NextId = 3,
-                Status = AchievementStatus.Published,
-                Type = AchievementType.ExhibitVisited
-            };
-            var achievement3 = new AchievementResult
-            {
-                Id = 3,
-                Description = "Visit 30 exhibits to get this achievement",
-                Title = "Visit 40 exhibits",
-                NextId = -1,
-                Status = AchievementStatus.Published,
-                Type = AchievementType.ExhibitVisited
-            };
-            var achievement4 = new AchievementResult
-            {
-                Id = 1,
-                Description = "Visit all exhibits on the Karls Route to get this achievement",
-                Title = "Finish Karls Route",
-                NextId = -1,
-                Status = AchievementStatus.Unpublished,
-                Type = AchievementType.RouteFinished
-            };
+            var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
 
-            var achievements = new[] { achievement1, achievement2, achievement3, achievement4 };
+            if (!UserPermissions.IsAllowedToGet(User.Identity, result.Status, result.UserId))
+                return Forbid();
 
-            var result = achievements.FirstOrDefault(a => a.Id == id);
             if (result == null)
             {
                 return NotFound(new { Message = "No Achievement could be found with this id" });
             }
 
-            return Ok(result);
+            return Ok(new AchievementResult(result));
         }
 
+        [HttpPost]
+        [ProducesResponseType(201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        public async Task<IActionResult> PostAsync([FromBody] AchievementArgs args)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
+                return Forbid();
+
+            var ev = new AchievementCreated
+            {
+                Id = _entityIndex.NextId(ResourceType.Achievement),
+                UserId = User.Identity.GetUserIdentity(),
+                Properties = args,
+                Timestamp = DateTimeOffset.Now
+            };
+
+            await _eventStore.AppendEventAsync(ev);
+            return Created($"{Request.Scheme}://{Request.Host}/api/Achievements/{ev.Id}", ev.Id);
+        }
+
+        [HttpPut("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> PutAsync(int id, [FromBody] AchievementArgs args)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+                return NotFound();
+
+            if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
+                return Forbid();
+
+            var ev = new AchievementUpdated()
+            {
+                Id = id,
+                Properties = args,
+                UserId = User.Identity.GetUserIdentity(),
+                Timestamp = DateTime.Now
+            };
+
+            await _eventStore.AppendEventAsync(ev);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(403)]
+        [ProducesResponseType(404)]
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+                return NotFound();
+
+            var achievment = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            if (!UserPermissions.IsAllowedToDelete(User.Identity, achievment.Status, achievment.UserId))
+                return Forbid();
+
+            var ev = new AchievementDeleted()
+            {
+                Id = id,
+                UserId = User.Identity.GetUserIdentity(),
+                Timestamp = DateTime.Now
+            };
+
+            await _eventStore.AppendEventAsync(ev);
+            return NoContent();
+        }
     }
 }
