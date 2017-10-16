@@ -94,10 +94,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
 
+            // R# complaining that result always != null (that`s not true)
+            #region No Resharper  
             if (result == null)
             {
                 return NotFound(new { Message = "No Achievement could be found with this id" });
             }
+            #endregion
+
 
             if (!UserPermissions.IsAllowedToGet(User.Identity, result.Status, result.UserId))
                 return Forbid();
@@ -184,5 +188,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return NoContent();
         }
+
+        [HttpGet("types")]
+        [ProducesResponseType(typeof(string[]), 200)]
+        public IActionResult Types() => Ok(Enum.GetNames(typeof(AchievementType)));
     }
 }
