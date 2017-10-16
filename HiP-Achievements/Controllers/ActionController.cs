@@ -51,8 +51,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
-            /// TODO : Validation check (e.g. exhibit exist) and User haven`t been there yet
+
+            // TODO: Validation check (e.g. exhibit exist) and User haven`t been there yet
             //switch (args.Type)
             //{
             //    case Model.Entity.ActionType.ExhibitVisited:
