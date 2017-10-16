@@ -35,11 +35,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
                 : query.Where(x => x.Timestamp > timestamp.Value);
         }
 
-        public static IQueryable<T> FilterByUser<T>(this IQueryable<T> query, AchievementQueryStatus status, IIdentity User) where T : Achievement
+        public static IQueryable<T> FilterByUser<T>(this IQueryable<T> query, AchievementQueryStatus status, IIdentity user) where T : Achievement
         {
-            bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User, status);
+            bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(user, status);
             return query.FilterIf(!isAllowedGetAll, x =>
-                        ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == User.GetUserIdentity()));
+                        ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == user.GetUserIdentity()));
         }
         /// <summary>
         /// Executes the query to determine the number of results, then retrieves a subset of the results
