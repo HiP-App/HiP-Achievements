@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
+using System;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 {
@@ -22,6 +23,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public int? NextId { get; set; }
 
+        public string UserId { get; set; }
+
+        public DateTimeOffset Timestamp { get; set; }
+        
         public AchievementResult()
         {
         }
@@ -35,6 +40,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
             Description = a.Description;
             Image = a.Image;
             NextId = a.NextId;
+            UserId = a.UserId;
+            Timestamp = a.Timestamp;
         }
     }
 }

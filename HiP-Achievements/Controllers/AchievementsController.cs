@@ -48,6 +48,40 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return Ok(achievements);
         }
 
+        [HttpGet]
+        [ProducesResponseType(typeof(AchievementResult), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult GetAchievement(AchievementQueryArgs args)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+
+            var result = achievements
+                   .FilterByIds(args.Exclude, args.IncludeOnly)
+                   .FilterByUser(args.Status, User.Identity)
+                   .FilterByStatus(args.Status)
+                   .FilterByTimestamp(args.Timestamp)
+                   .FilterIf(args.Type != null, x => x.Type == args.Type)
+                   .FilterIf(!string.IsNullOrEmpty(args.Query), x =>
+                       x.Title.ToLower().Contains(args.Query.ToLower()) ||
+                       x.Description.ToLower().Contains(args.Query.ToLower()))
+                   .Sort(args.OrderBy,
+                       ("id", x => x.Id),
+                       ("title", x => x.Title),
+                       ("timestamp", x => x.Timestamp))
+                   .PaginateAndSelect(args.Page, args.PageSize, x => new AchievementResult(x));
+
+            if (result == null)
+            {
+                return NotFound(new { Message = "No Achievement could be found with this id" });
+            }
+
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(AchievementResult), 200)]
         [ProducesResponseType(400)]

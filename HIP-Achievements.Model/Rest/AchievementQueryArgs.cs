@@ -1,11 +1,18 @@
-﻿using System.Runtime.Serialization;
+﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 {
-    public class AchievementQueryArgs
-    {
 
-    }
+   public class AchievementQueryArgs : QueryArgs
+   {
+            public AchievementType? Type { get; set; }
+
+            [DefaultValue(AchievementQueryStatus.All)]
+            public AchievementQueryStatus Status { get; set; } = AchievementQueryStatus.All;
+   }
+    
 
     public enum AchievementQueryStatus
     {
