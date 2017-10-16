@@ -5,7 +5,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model
 {
     public class ResourceType : IEquatable<ResourceType>
     {
-        /// public static readonly ResourceType Photo = new ResourceType("Photo");
+        public static readonly ResourceType Achievement = new ResourceType("Achievement");
+        public static readonly ResourceType Action = new ResourceType("Action");
 
 
         /// <summary>
