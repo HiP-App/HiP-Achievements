@@ -1,18 +1,18 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
-using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -20,12 +20,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class AchievementsController : Controller
     {
-        private readonly EventStoreClient _eventStore;
+        private readonly EventStoreService _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly EntityIndex _entityIndex;
 
 
-        public AchievementsController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache)
+        public AchievementsController(EventStoreService eventStore, CacheDatabaseManager db, InMemoryCache cache)
         {
             _eventStore = eventStore;
             _db = db;
