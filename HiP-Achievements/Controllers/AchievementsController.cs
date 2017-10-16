@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -11,7 +12,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class AchievementsController : Controller
     {
-        AchievementResult achievement1 = new AchievementResult
+        Achievement achievement1 = new Achievement
         {
             Id = 1,
             Description = "Visit 10 exhibits to get this achievement",
@@ -20,7 +21,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             Status = AchievementStatus.Published,
             Type = AchievementType.ExhibitVisited
         };
-        AchievementResult achievement2 = new AchievementResult
+        Achievement achievement2 = new Achievement
         {
             Id = 2,
             Description = "Visit 20 exhibits to get this achievement",
@@ -29,7 +30,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             Status = AchievementStatus.Published,
             Type = AchievementType.ExhibitVisited
         };
-        AchievementResult achievement3 = new AchievementResult
+        Achievement achievement3 = new Achievement
         {
             Id = 3,
             Description = "Visit 30 exhibits to get this achievement",
@@ -38,7 +39,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             Status = AchievementStatus.Published,
             Type = AchievementType.ExhibitVisited
         };
-        AchievementResult achievement4 = new AchievementResult
+        Achievement achievement4 = new Achievement
         {
             Id = 1,
             Description = "Visit all exhibits on the Karls Route to get this achievement",
@@ -55,16 +56,48 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return Ok(new List<int> { 1, 2, 3, 4 });
         }
 
-        [ProducesResponseType(404)]
-        [ProducesResponseType(400)]
+        [HttpGet]
         [ProducesResponseType(typeof(AchievementResult), 200)]
-        [HttpGet("{id}")]
-        public IActionResult GetAchievementById(int id)
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult GetAchievement(AchievementQueryArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            //TODO here filtering
+            var achievements = new[] { achievement1, achievement2, achievement3, achievement4 }.AsQueryable();
+
+            var result = achievements
+                   .FilterByIds(args.Exclude, args.IncludeOnly)
+                   .FilterByUser(args.Status, User.Identity)
+                   .FilterByStatus(args.Status)
+                   .FilterByTimestamp(args.Timestamp)
+                   .FilterIf(args.Type != null, x => x.Type == args.Type)
+                   .FilterIf(!string.IsNullOrEmpty(args.Query), x =>
+                       x.Title.ToLower().Contains(args.Query.ToLower()) ||
+                       x.Description.ToLower().Contains(args.Query.ToLower()))
+                   .Sort(args.OrderBy,
+                       ("id", x => x.Id),
+                       ("title", x => x.Title),
+                       ("timestamp", x => x.Timestamp))
+                   .PaginateAndSelect(args.Page, args.PageSize, x => new AchievementResult(x));
+
+             if (result == null)
+            {
+                return NotFound(new { Message = "No Achievement could be found with this id" });
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(AchievementResult), 200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public IActionResult GetAchievementById(int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var achievements = new[] { achievement1, achievement2, achievement3, achievement4 };
 
@@ -74,7 +107,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 return NotFound(new { Message = "No Achievement could be found with this id" });
             }
 
-            return Ok(result);
+            return Ok(new AchievementResult(result));
         }
 
     }

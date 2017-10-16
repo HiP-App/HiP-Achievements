@@ -22,10 +22,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
                 .FilterIf(includedIds != null, x => includedIds.Contains(x.Id));
         }
 
-        //public static IQueryable<T> FilterByStatus<T>(this IQueryable<T> query, ContentStatus status) where T : ContentBase
-        //{
-        //    return query.FilterIf(status != ContentStatus.All, x => x.Status == status);
-        //}
+        public static IQueryable<T> FilterByStatus<T>(this IQueryable<T> query, AchievementQueryStatus status) where T: Achievement
+        {
+            Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
+            return query.FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus);
+        }
 
         public static IQueryable<T> FilterByTimestamp<T>(this IQueryable<T> query, DateTimeOffset? timestamp) where T : ContentBase
         {
@@ -34,12 +35,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
                 : query.Where(x => x.Timestamp > timestamp.Value);
         }
 
-        //public static IQueryable<T> FilterByUser<T>(this IQueryable<T> query, ContentStatus status, IIdentity User) where T : ContentBase
-        //{
-        //    bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User, status);
-        //    return query.FilterIf(!isAllowedGetAll, x =>
-        //                ((status == ContentStatus.All) && (x.Status == ContentStatus.Published)) || (x.UserId == User.GetUserIdentity()));
-        //}
+        public static IQueryable<T> FilterByUser<T>(this IQueryable<T> query, AchievementQueryStatus status, IIdentity User) where T : Achievement
+        {
+            bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User, status);
+            return query.FilterIf(!isAllowedGetAll, x =>
+                        ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == User.GetUserIdentity()));
+        }
         /// <summary>
         /// Executes the query to determine the number of results, then retrieves a subset of the results
         /// (determined by <paramref name="page"/> and <paramref name="pageSize"/>) and projects them to objects of
