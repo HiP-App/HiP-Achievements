@@ -92,7 +92,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().First(a => a.Id == id);
 
             if (!UserPermissions.IsAllowedToGet(User.Identity, result.Status, result.UserId))
                 return Forbid();
