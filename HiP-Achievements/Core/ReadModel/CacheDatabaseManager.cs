@@ -50,7 +50,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
             switch (ev)
             {
                 case AchievementCreated e:
-                    var newAchievement = new Achievement(e.Properties)
+                    var typeArgs = ArgumentHelper.GetAchievementTypeArgs(e.Properties);
+                    var newAchievement = new Achievement(e.Properties, typeArgs)
                     {
                         Id = e.Id,
                         UserId = e.UserId,
@@ -66,7 +67,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     break;
                 case AchievementUpdated e:
                     var originalAchievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().First(a => a.Id == e.Id);
-                    var updatedAchievement = new Achievement(e.Properties)
+                    var updatedTypeArgs = ArgumentHelper.GetAchievementTypeArgs(e.Properties);
+                    var updatedAchievement = new Achievement(e.Properties, updatedTypeArgs)
                     {
                         Timestamp = e.Timestamp,
                         UserId = originalAchievement.UserId,
