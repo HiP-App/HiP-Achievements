@@ -16,6 +16,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         
         public int? NextId { get; set; }
 
+        public int Points { get; set; }
+
         public Achievement()
         {
         }
@@ -27,6 +29,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
             Description = args.Description;
             NextId = args.NextId;
             Title = args.Title;
+            Points = args.Points;
         }
     }
 

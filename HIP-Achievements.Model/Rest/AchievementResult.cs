@@ -23,6 +23,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public int? NextId { get; set; }
 
+        public int Points { get; set; }
+
         public string UserId { get; set; }
 
         public DateTimeOffset Timestamp { get; set; }
@@ -42,6 +44,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
             NextId = a.NextId;
             UserId = a.UserId;
             Timestamp = a.Timestamp;
+            Points = a.Points;
         }
     }
 }
