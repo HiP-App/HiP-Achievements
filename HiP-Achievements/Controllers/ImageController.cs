@@ -10,10 +10,12 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
+using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -24,12 +26,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EventStoreClient _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly UploadFilesConfig _filesConfig;
+        private readonly EntityIndex _entityIndex;
 
-        public ImageController(EventStoreClient eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig)
+        public ImageController(EventStoreClient eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache)
         {
             _eventStore = eventStore;
             _db = db;
             _filesConfig = filesConfig.Value;
+            _entityIndex = cache.Index<EntityIndex>();
         }
 
         [HttpPut("{id}")]
@@ -40,13 +44,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable()
-                .FirstOrDefault(a => a.Id == id);
-
-            if (achievement == null)
+            if (!_entityIndex.Exists(ResourceType.Achievement, id))
                 return NotFound(new { Message = "No Achievement could be found with this id" });
 
-            if (!UserPermissions.IsAllowedToCreateImage(User.Identity, achievement.UserId))
+
+            if (!UserPermissions.IsAllowedToCreateImage(User.Identity, _entityIndex.Owner(ResourceType.Achievement, id)))
             {
                 return Forbid();
             }
@@ -85,9 +87,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
         }
 
+        [HttpGet("{id}")]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        [HttpGet("{id}")]
         public IActionResult GetImageById(int id)
         {
             if (!ModelState.IsValid)
