@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
