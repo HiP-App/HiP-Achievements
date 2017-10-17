@@ -46,7 +46,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             services
                 .Configure<EndpointConfig>(Configuration.GetSection("Endpoints"))
-                .Configure<AuthConfig>(Configuration.GetSection("Auth"));
+                .Configure<AuthConfig>(Configuration.GetSection("Auth"))
+                .Configure<UploadFilesConfig>(Configuration.GetSection("UploadFiles"));
 
 
             services

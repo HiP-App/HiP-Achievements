@@ -12,8 +12,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 
         public string Description { get; set; }
 
-        public int? Image { get; set; }
-        
+        public string Filename { get; set; }
+
         public int? NextId { get; set; }
 
         public Achievement()

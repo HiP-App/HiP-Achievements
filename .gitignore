@@ -3,12 +3,14 @@
 
 # App settings for development
 appsettings.Development.json
+/HiP-Achievements/Images/
 
 # User-specific files
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

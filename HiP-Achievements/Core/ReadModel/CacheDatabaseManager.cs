@@ -86,6 +86,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     };
                     _db.GetCollection<Action>(ResourceType.Action.Name).InsertOne(newAction);
                     break;
+
+                case AchievementImageUpdated e:
+                    var achievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable()
+                        .FirstOrDefault(a => a.Id == e.Id);
+                    achievement.Filename = e.File;
+                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
+
+                    break;
             }
 
         }
