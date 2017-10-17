@@ -23,6 +23,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public int? NextId { get; set; }
 
+        public int Points { get; set; }
+
         public string UserId { get; set; }
 
         public IAchievementTypeArgs TypeArgs { get; set; }
@@ -45,6 +47,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
             UserId = a.UserId;
             Timestamp = a.Timestamp;
             TypeArgs = a.TypeArgs;
+            Points = a.Points;
         }
     }
 }
