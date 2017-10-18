@@ -6,6 +6,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
     {
         public AchievementType Type { get; set; }
 
+        public IAchievementTypeArgs TypeArgs { get; set; }
+
         public AchievementStatus Status { get; set; }
 
         public string Title { get; set; }
@@ -14,19 +16,25 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 
         public string Filename { get; set; }
 
+        public int? Image { get; set; }
+
         public int? NextId { get; set; }
+
+        public int Points { get; set; }
 
         public Achievement()
         {
         }
 
-        public Achievement(AchievementArgs args)
+        public Achievement(AchievementArgs args, IAchievementTypeArgs typeArgs)
         {
             Type = args.Type;
             Status = args.Status;
             Description = args.Description;
             NextId = args.NextId;
             Title = args.Title;
+            TypeArgs = typeArgs;
+            Points = args.Points;
         }
     }
 
@@ -42,4 +50,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
     {
         ExhibitVisited, RouteFinished
     }
+
+    public interface IAchievementTypeArgs { }
 }

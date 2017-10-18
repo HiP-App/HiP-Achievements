@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
@@ -147,6 +148,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
                 return Forbid();
 
+            try
+            {
+                ArgumentHelper.GetAchievementTypeArgs(args);
+            }
+            catch (JsonSerializationException)
+            {
+                return BadRequest(new { Message = "The provided type arguments are invalid" });
+            }
+
             var ev = new AchievementCreated
             {
                 Id = _entityIndex.NextId(ResourceType.Achievement),
@@ -175,6 +185,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
                 return Forbid();
 
+            try
+            {
+                ArgumentHelper.GetAchievementTypeArgs(args);
+            }
+            catch (JsonSerializationException)
+            {
+                return BadRequest(new { Message = "The provided type arguments are invalid" });
+            }
+            
             var ev = new AchievementUpdated
             {
                 Id = id,
