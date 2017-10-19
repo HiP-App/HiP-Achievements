@@ -19,7 +19,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public string Description { get; set; }
 
-        public int? Image { get; set; }
+        public string ImageUrl { get; set; }
 
         public int? NextId { get; set; }
 
@@ -42,7 +42,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
             Status = a.Status;
             Title = a.Title;
             Description = a.Description;
-            Image = a.Image;
             NextId = a.NextId;
             UserId = a.UserId;
             Timestamp = a.Timestamp;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
@@ -24,13 +25,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EventStoreClient _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly EntityIndex _entityIndex;
+        private EndpointConfig _endpointConfig;
 
 
-        public AchievementsController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache)
+        public AchievementsController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
         {
             _eventStore = eventStore;
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
+            _endpointConfig = endpointConfig.Value;
         }
 
         [HttpGet("ids")]
@@ -73,7 +76,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                        ("id", x => x.Id),
                        ("title", x => x.Title),
                        ("timestamp", x => x.Timestamp))
-                   .PaginateAndSelect(args.Page, args.PageSize, x => new AchievementResult(x));
+                   .PaginateAndSelect(args.Page, args.PageSize, x =>
+                {
+                    var ar = new AchievementResult(x);
+                    if (!string.IsNullOrEmpty(x.Filename))
+                        ar.ImageUrl = GenerateImageUrl(x.Id);
+                    return ar;
+                });
 
             if (result == null)
             {
@@ -93,21 +102,38 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
 
             // R# complaining that result always != null (that`s not true)
             #region No Resharper  
-            if (result == null)
+            if (achievement == null)
             {
                 return NotFound(new { Message = "No Achievement could be found with this id" });
             }
             #endregion
 
-
-            if (!UserPermissions.IsAllowedToGet(User.Identity, result.Status, result.UserId))
+            if (!UserPermissions.IsAllowedToGet(User.Identity, achievement.Status, achievement.UserId))
                 return Forbid();
 
-            return Ok(new AchievementResult(result));
+            var result = new AchievementResult(achievement);
+            if (!string.IsNullOrEmpty(achievement.Filename))
+                result.ImageUrl = GenerateImageUrl(id);
+
+            return Ok(result);
+        }
+
+        private string GenerateImageUrl(int id)
+        {
+            if (!string.IsNullOrWhiteSpace(_endpointConfig.ThumbnailUrlPattern))
+            {
+                // Generate thumbnail URL (if a thumbnail URL pattern is configured)
+                return string.Format(_endpointConfig.ThumbnailUrlPattern, id);
+            }
+            else
+            {
+                // Return direct URL
+                return $"{Request.Scheme}://{Request.Host}/api/images/{id}/";
+            }
         }
 
         [HttpPost]
@@ -167,7 +193,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             {
                 return BadRequest(new { Message = "The provided type arguments are invalid" });
             }
-
+            
             var ev = new AchievementUpdated
             {
                 Id = id,

@@ -8,7 +8,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model
         public static readonly ResourceType Achievement = new ResourceType("Achievement");
         public static readonly ResourceType Action = new ResourceType("Action");
 
-
         /// <summary>
         /// This name is used in two ways:
         /// 1) as a "type"/"kind of resource" identifier in events
@@ -16,6 +15,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model
         /// </summary>
         [BsonElement]
         public string Name { get; }
+        
 
         [BsonConstructor]
         public ResourceType(string name)
