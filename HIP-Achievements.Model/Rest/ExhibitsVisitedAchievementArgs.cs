@@ -5,7 +5,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 {
     public class ExhibitsVisitedAchievementArgs : AchievementArgs
     {
-        [Required]
+        [Range(1, int.MaxValue)]
         public int Count { get; set; }
         public override Achievement CreateAchievement()
         {
