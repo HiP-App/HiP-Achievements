@@ -1,12 +1,11 @@
-﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+﻿using System.Runtime.Serialization;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
-    public class Achievement : ContentBase
+    public abstract class Achievement : ContentBase
     {
-        public AchievementType Type { get; set; }
-
-        public IAchievementTypeArgs TypeArgs { get; set; }
+        public abstract string TypeName { get; }
 
         public AchievementStatus Status { get; set; }
 
@@ -26,16 +25,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         {
         }
 
-        public Achievement(AchievementArgs args, IAchievementTypeArgs typeArgs)
+        public Achievement(AchievementArgs args)
         {
-            Type = args.Type;
             Status = args.Status;
             Description = args.Description;
             NextId = args.NextId;
             Title = args.Title;
-            TypeArgs = typeArgs;
             Points = args.Points;
         }
+
+        public abstract AchievementResult CreateAchievementResult();
     }
 
     /// <remark>
@@ -43,13 +42,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
     /// </remark>
     public enum AchievementStatus
     {
-        Unpublished, Published
+        [EnumMember(Value = "DRAFT")]
+        Draft,
+        [EnumMember(Value = "IN_REVIEW")]
+        InReview,
+        [EnumMember(Value = "PUBLISHED")]
+        Published
     }
 
-    public enum AchievementType
-    {
-        ExhibitVisited, RouteFinished
-    }
 
-    public interface IAchievementTypeArgs { }
 }

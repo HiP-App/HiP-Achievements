@@ -5,12 +5,14 @@ using System;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 {
-    public class AchievementResult
+    /// <summary>
+    /// Model for returning Achievements, derived class is used if additional properties need to be returned 
+    /// </summary>
+    public abstract class AchievementResult
     {
         public int Id { get; set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public AchievementType Type { get; set; }
+        public string Type { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
         public AchievementStatus Status { get; set; }
@@ -27,25 +29,22 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public string UserId { get; set; }
 
-        public IAchievementTypeArgs TypeArgs { get; set; }
-
         public DateTimeOffset Timestamp { get; set; }
         
-        public AchievementResult()
+        protected AchievementResult()
         {
         }
 
         public AchievementResult(Achievement a)
         {
             Id = a.Id;
-            Type = a.Type;
+            Type = a.TypeName;
             Status = a.Status;
             Title = a.Title;
             Description = a.Description;
             NextId = a.NextId;
             UserId = a.UserId;
             Timestamp = a.Timestamp;
-            TypeArgs = a.TypeArgs;
             Points = a.Points;
         }
     }
