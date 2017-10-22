@@ -31,7 +31,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 
         public DateTimeOffset Timestamp { get; set; }
         
-        protected AchievementResult()
+        public AchievementResult()
         {
         }
 
