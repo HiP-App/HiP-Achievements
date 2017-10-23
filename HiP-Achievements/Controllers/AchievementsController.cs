@@ -34,7 +34,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
-        }
+        }        
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]
@@ -101,10 +101,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
             var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
-
-            // R# complaining that result always != null (that`s not true)
 
             if (achievement == null)
             {

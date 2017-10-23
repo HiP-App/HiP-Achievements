@@ -24,5 +24,4 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
         [EnumMember(Value = "ALL")]
         All
     }
-
 }
