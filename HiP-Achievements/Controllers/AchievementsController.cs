@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
@@ -25,7 +25,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EventStoreClient _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly EntityIndex _entityIndex;
-        private EndpointConfig _endpointConfig;
+        private readonly EndpointConfig _endpointConfig;
 
 
         public AchievementsController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
@@ -68,7 +68,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                    .FilterByUser(args.Status, User.Identity)
                    .FilterByStatus(args.Status)
                    .FilterByTimestamp(args.Timestamp)
-                   .FilterIf(args.Type != null, x => x.Type == args.Type)
+                   .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .FilterIf(!string.IsNullOrEmpty(args.Query), x =>
                        x.Title.ToLower().Contains(args.Query.ToLower()) ||
                        x.Description.ToLower().Contains(args.Query.ToLower()))
@@ -78,7 +78,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                        ("timestamp", x => x.Timestamp))
                    .PaginateAndSelect(args.Page, args.PageSize, x =>
                 {
-                    var ar = new AchievementResult(x);
+                    var ar = x.CreateAchievementResult();
                     if (!string.IsNullOrEmpty(x.Filename))
                         ar.ImageUrl = GenerateImageUrl(x.Id);
                     return ar;
@@ -105,17 +105,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
 
             // R# complaining that result always != null (that`s not true)
-            #region No Resharper  
+
             if (achievement == null)
             {
                 return NotFound(new { Message = "No Achievement could be found with this id" });
             }
-            #endregion
 
             if (!UserPermissions.IsAllowedToGet(User.Identity, achievement.Status, achievement.UserId))
                 return Forbid();
 
-            var result = new AchievementResult(achievement);
+            var result = achievement.CreateAchievementResult();
             if (!string.IsNullOrEmpty(achievement.Filename))
                 result.ImageUrl = GenerateImageUrl(id);
 
@@ -134,76 +133,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 // Return direct URL
                 return $"{Request.Scheme}://{Request.Host}/api/images/{id}/";
             }
-        }
-
-        [HttpPost]
-        [ProducesResponseType(201)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(403)]
-        public async Task<IActionResult> PostAsync([FromBody] AchievementArgs args)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
-                return Forbid();
-
-            try
-            {
-                ArgumentHelper.GetAchievementTypeArgs(args);
-            }
-            catch (JsonSerializationException)
-            {
-                return BadRequest(new { Message = "The provided type arguments are invalid" });
-            }
-
-            var ev = new AchievementCreated
-            {
-                Id = _entityIndex.NextId(ResourceType.Achievement),
-                UserId = User.Identity.GetUserIdentity(),
-                Properties = args,
-                Timestamp = DateTimeOffset.Now
-            };
-
-            await _eventStore.AppendEventAsync(ev);
-            return Created($"{Request.Scheme}://{Request.Host}/api/Achievements/{ev.Id}", ev.Id);
-        }
-
-        [HttpPut("{id}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(403)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> PutAsync(int id, [FromBody] AchievementArgs args)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            if (!_entityIndex.Exists(ResourceType.Achievement, id))
-                return NotFound();
-
-            if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
-                return Forbid();
-
-            try
-            {
-                ArgumentHelper.GetAchievementTypeArgs(args);
-            }
-            catch (JsonSerializationException)
-            {
-                return BadRequest(new { Message = "The provided type arguments are invalid" });
-            }
-            
-            var ev = new AchievementUpdated
-            {
-                Id = id,
-                Properties = args,
-                UserId = User.Identity.GetUserIdentity(),
-                Timestamp = DateTime.Now
-            };
-
-            await _eventStore.AppendEventAsync(ev);
-            return NoContent();
         }
 
         [HttpDelete("{id}")]
@@ -236,6 +165,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
         [HttpGet("types")]
         [ProducesResponseType(typeof(string[]), 200)]
-        public IActionResult Types() => Ok(Enum.GetNames(typeof(AchievementType)));
+        public IActionResult Types() => Ok(GetAllTypeNames());
+
+        /// <summary>
+        /// This method iterates over all classes that inherit from <see cref="Achievement"/> and selects their TypeNames
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> GetAllTypeNames()
+        {
+            return typeof(Achievement)
+                .Assembly.GetTypes()
+                .Where(t => t.IsSubclassOf(typeof(Achievement)) && !t.IsAbstract)
+                .Select(t => (Achievement)Activator.CreateInstance(t)).Select(a => a.TypeName);
+        }
     }
 }

@@ -50,15 +50,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
             switch (ev)
             {
                 case AchievementCreated e:
-                    var typeArgs = ArgumentHelper.GetAchievementTypeArgs(e.Properties);
-                    var newAchievement = new Achievement(e.Properties, typeArgs)
-                    {
-                        Id = e.Id,
-                        UserId = e.UserId,
-                        LastModifiedBy = e.UserId,
-                        Timestamp = e.Timestamp
-                    };
-
+                    var newAchievement = e.Properties.CreateAchievement();
+                    newAchievement.Id = e.Id;
+                    newAchievement.UserId = e.UserId;
+                    newAchievement.LastModifiedBy = e.UserId;
+                    newAchievement.Timestamp = e.Timestamp;
                     _db.GetCollection<Achievement>(ResourceType.Achievement.Name).InsertOne(newAchievement);
                     break;
 
@@ -67,14 +63,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     break;
                 case AchievementUpdated e:
                     var originalAchievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().First(a => a.Id == e.Id);
-                    var updatedTypeArgs = ArgumentHelper.GetAchievementTypeArgs(e.Properties);
-                    var updatedAchievement = new Achievement(e.Properties, updatedTypeArgs)
-                    {
-                        Timestamp = e.Timestamp,
-                        UserId = originalAchievement.UserId,
-                        LastModifiedBy = e.UserId,
-                        Id = e.Id
-                    };
+                    var updatedAchievement = e.Properties.CreateAchievement();
+                    updatedAchievement.Id = e.Id;
+                    updatedAchievement.UserId = originalAchievement.UserId;
+                    updatedAchievement.LastModifiedBy = e.UserId;
+                    updatedAchievement.Timestamp = e.Timestamp;
                     _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
                     break;
 
