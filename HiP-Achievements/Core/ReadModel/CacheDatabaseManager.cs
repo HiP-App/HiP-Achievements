@@ -72,13 +72,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     break;
 
                 case ActionCreated e:
-                    var newAction = new Action(e.Properties)
-                    {
-                        Id = e.Id,
-                        UserId = e.UserId,
-                        LastModifiedBy = e.UserId,
-                        Timestamp = e.Timestamp
-                    };
+                    var newAction = e.Properties.CreateAction();
+                    newAction.Id = e.Id;
+                    newAction.UserId = e.UserId;
+                    newAction.LastModifiedBy = e.UserId;
+                    newAction.Timestamp = e.Timestamp;
                     _db.GetCollection<Action>(ResourceType.Action.Name).InsertOne(newAction);
                     break;
 

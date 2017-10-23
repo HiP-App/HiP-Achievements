@@ -1,12 +1,14 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
     public class RouteFinishedAchievement : Achievement
     {
-        public RouteFinishedAchievement(AchievementArgs args) : base(args)
+        public int RouteId { get; set; }
+        public RouteFinishedAchievement(RouteFinishedAchievementArgs args) : base(args)
         {
-
+            if (args.RouteId != null) RouteId = args.RouteId.Value;
         }
 
         public override string TypeName => "RouteFinished";

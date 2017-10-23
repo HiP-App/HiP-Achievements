@@ -12,7 +12,12 @@ using PaderbornUniversity.SILab.Hip.EventSourcing;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
+    /// <summary>
+    /// Base class for creating controllers for a specific achievement type
+    /// </summary>
+    /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
+    [Route("api/Achievement/[controller]")]
     public abstract class AchievementBaseController<TArgs> : Controller where TArgs : AchievementArgs
     {
         private readonly EntityIndex _entityIndex;
