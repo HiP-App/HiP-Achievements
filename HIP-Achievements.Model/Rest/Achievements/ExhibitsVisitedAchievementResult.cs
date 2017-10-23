@@ -1,6 +1,6 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 
-namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
+namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements
 {
     public class ExhibitsVisitedAchievementResult : AchievementResult
     {
