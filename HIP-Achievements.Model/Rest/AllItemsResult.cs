@@ -9,4 +9,3 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
         public IReadOnlyCollection<T> Items { get; set; }
     }
 }
-

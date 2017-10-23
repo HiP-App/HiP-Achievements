@@ -46,7 +46,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             services
                 .Configure<EndpointConfig>(Configuration.GetSection("Endpoints"))
-                .Configure<AuthConfig>(Configuration.GetSection("Auth"));
+                .Configure<AuthConfig>(Configuration.GetSection("Auth"))
+                .Configure<UploadFilesConfig>(Configuration.GetSection("UploadFiles"))
+                .Configure<CorsConfig>(Configuration);
+
 
 
             services
@@ -91,18 +94,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             // CacheDatabaseManager should start up immediately (not only when injected into a controller or
             // something), so we manually request an instance here
-            //app.ApplicationServices.GetService<CacheDatabaseManager>();
+            app.ApplicationServices.GetService<CacheDatabaseManager>();
 
             //// Use CORS (important: must be before app.UseMvc())
-            //app.UseCors(builder =>
-            //{
-            //    var corsEnvConf = corsConfig.Value.Cors[env.EnvironmentName];
-            //    builder
-            //        .WithOrigins(corsEnvConf.Origins)
-            //        .WithMethods(corsEnvConf.Methods)
-            //        .WithHeaders(corsEnvConf.Headers)
-            //        .WithExposedHeaders(corsEnvConf.ExposedHeaders);
-            //});
+            app.UseCors(builder =>
+            {
+                var corsEnvConf = corsConfig.Value.Cors[env.EnvironmentName];
+                builder
+                    .WithOrigins(corsEnvConf.Origins)
+                    .WithMethods(corsEnvConf.Methods)
+                    .WithHeaders(corsEnvConf.Headers)
+                    .WithExposedHeaders(corsEnvConf.ExposedHeaders);
+            });
 
             app.UseAuthentication();
             app.UseMvc();

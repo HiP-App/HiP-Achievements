@@ -5,8 +5,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model
 {
     public class ResourceType : IEquatable<ResourceType>
     {
-        /// public static readonly ResourceType Photo = new ResourceType("Photo");
-
+        public static readonly ResourceType Achievement = new ResourceType("Achievement");
+        public static readonly ResourceType Action = new ResourceType("Action");
 
         /// <summary>
         /// This name is used in two ways:
@@ -15,6 +15,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model
         /// </summary>
         [BsonElement]
         public string Name { get; }
+        
 
         [BsonConstructor]
         public ResourceType(string name)

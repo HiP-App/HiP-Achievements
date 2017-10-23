@@ -10,6 +10,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         /// </summary>
         public string UserId { get; set; }
 
+        public string LastModifiedBy { get; set; } 
+
         /// <summary>
         /// The date and time of the last modification.
         /// </summary>

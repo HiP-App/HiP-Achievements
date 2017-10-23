@@ -22,7 +22,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
                 .FilterIf(includedIds != null, x => includedIds.Contains(x.Id));
         }
 
-        public static IQueryable<T> FilterByStatus<T>(this IQueryable<T> query, AchievementQueryStatus status) where T: Achievement
+        public static IQueryable<T> FilterByStatus<T>(this IQueryable<T> query, AchievementQueryStatus status) where T : Achievement
         {
             Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
             return query.FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus);
