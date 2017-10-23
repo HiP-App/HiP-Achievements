@@ -195,8 +195,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                             unlocked.Add(e);
                         }
                         break;
-                    case RouteFinishedAchievement e:
-                        break;
+
+                    // TODO: implement for other achievement types
                 }
             }
             var result = new AllItemsResult<AchievementResult>
