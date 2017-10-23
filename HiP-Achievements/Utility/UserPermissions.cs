@@ -50,7 +50,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
 
             return CheckRoles(identity);
         }
-
+      
         public static bool IsAllowedToCreateImage(IIdentity identity, string ownerId)
         {
             bool isOwner = ownerId == identity.GetUserIdentity();
