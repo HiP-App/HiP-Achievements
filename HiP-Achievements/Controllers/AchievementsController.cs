@@ -129,7 +129,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             else
             {
                 // Return direct URL
-                return $"{Request.Scheme}://{Request.Host}/api/images/{id}/";
+                return $"{Request.Scheme}://{Request.Host}/api/image/{id}/";
             }
         }
 
