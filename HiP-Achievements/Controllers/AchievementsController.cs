@@ -35,7 +35,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
-        }        
+        }
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]
@@ -179,10 +179,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var actions = _db.Database.GetCollection<Action>(ResourceType.Action.Name)
                                           .AsQueryable()
-                                          .Where(x=>x.UserId == User.Identity.GetUserIdentity());
+                                          .Where(x => x.UserId == User.Identity.GetUserIdentity());
 
             var unlocked = new List<Achievement>();
-            foreach(var achievement in achievements)
+            foreach (var achievement in achievements)
             {
                 switch (achievement)
                 {
@@ -193,7 +193,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                         }
                         break;
 
-                    // TODO: implement for other achievement types
+                        // TODO: implement for other achievement types
                 }
             }
             var result = new AllItemsResult<AchievementResult>

@@ -56,7 +56,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .AddSingleton<EventStoreClient>()
                 .AddSingleton<CacheDatabaseManager>()
                 .AddSingleton<InMemoryCache>()
-                .AddSingleton<IDomainIndex, EntityIndex>();
+                .AddSingleton<IDomainIndex, EntityIndex>()
+                .AddSingleton<IDomainIndex, ExhibitsVisitedIndex>();
+
 
             var serviceProvider = services.BuildServiceProvider(); // allows us to actually get the configured services
             var authConfig = serviceProvider.GetService<IOptions<AuthConfig>>();

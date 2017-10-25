@@ -18,7 +18,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Action/[controller]")]
-    public class ActionBaseController<TArgs> : Controller where TArgs : ActionArgs
+    public abstract class ActionBaseController<TArgs> : Controller where TArgs : ActionArgs
     {
 
         private readonly EntityIndex _entityIndex;
@@ -33,21 +33,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Post([FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // TODO : Validation check (e.g. exhibit exist) and User haven`t been there yet
-            //switch (args.Type)
-            //{
-            //    case Model.Entity.ActionType.ExhibitVisited:
-            //        if (!_entityIndex.Exists(ResourceType.))
-            //            ModelState.AddModelError("Exhibit", String.Format("Exhibit with Id: {0} doesn`t exist", args.EntityId));
-            //        break;
-            //}
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
 
-            var ev = new ActionCreated()
+            var ev = new ActionCreated
             {
                 Id = _entityIndex.NextId(ResourceType.Action),
                 UserId = User.Identity.GetUserIdentity(),
@@ -58,5 +54,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
         }
+
+        protected abstract Task<ActionArgsValidationResult> ValidateActionArgs(TArgs args);
+    }
+
+    public class ActionArgsValidationResult
+    {
+        public bool Success { get; set; }
+        public IActionResult ActionResult { get; set; }
     }
 }

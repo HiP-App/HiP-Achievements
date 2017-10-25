@@ -44,5 +44,10 @@
         /// to the original image files are then returned.
         /// </remarks>
         public string ThumbnailUrlPattern { get; set; }
+
+        /// <summary>
+        /// Endpoint of the Datastore
+        /// </summary>
+        public string DataStoreHost { get; set; }
     }
 }
