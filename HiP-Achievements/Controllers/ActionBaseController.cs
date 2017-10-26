@@ -17,7 +17,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// </summary>
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
-    [Route("api/Action/[controller]")]
+    [Route("api/Actions/[controller]")]
     public class ActionBaseController<TArgs> : Controller where TArgs : ActionArgs
     {
 
