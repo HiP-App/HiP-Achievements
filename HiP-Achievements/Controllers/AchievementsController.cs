@@ -15,6 +15,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -34,7 +35,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
-        }        
+
+        }
+
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]
@@ -128,7 +131,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             else
             {
                 // Return direct URL
-                return $"{Request.Scheme}://{Request.Host}/api/images/{id}/";
+                return $"{Request.Scheme}://{Request.Host}/api/image/{id}/";
             }
         }
 
@@ -164,15 +167,59 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(typeof(string[]), 200)]
         public IActionResult Types() => Ok(GetAllTypeNames());
 
+        [HttpGet("Unlocked")]
+        [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
+        [ProducesResponseType(400)]
+        public IActionResult GetUnlocked()
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name)
+                                          .AsQueryable()
+                                          .FilterByStatus(AchievementQueryStatus.Published);
+
+            var actions = _db.Database.GetCollection<Action>(ResourceType.Action.Name)
+                                          .AsQueryable()
+                                          .Where(x => x.UserId == User.Identity.GetUserIdentity());
+
+            var unlocked = new List<Achievement>();
+            foreach (var achievement in achievements)
+            {
+                switch (achievement)
+                {
+                    case ExhibitsVisitedAchievement e:
+                        if (e.Count <= actions.Where(x => x is ExhibitVisitedAction).ToList().Count)
+                        {
+                            unlocked.Add(e);
+                        }
+                        break;
+
+                        // TODO: implement for other achievement types
+                }
+            }
+            var result = new AllItemsResult<AchievementResult>
+            {
+                Total = unlocked.Count,
+                Items = unlocked.Select(x => x.CreateAchievementResult()).ToList()
+            };
+
+            return Ok(result);
+        }
+
         /// <summary>
         /// This method iterates over all classes that inherit from <see cref="Achievement"/> and selects their TypeNames
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// This only works if the derived class has a parameterless constructor, so that an instance can be created
+        /// </remarks>
+        /// <returns>All type names</returns>
         private IEnumerable<string> GetAllTypeNames()
         {
             return typeof(Achievement)
                 .Assembly.GetTypes()
                 .Where(t => t.IsSubclassOf(typeof(Achievement)) && !t.IsAbstract)
+                .Where(t => t.GetConstructor(Type.EmptyTypes) != null)
                 .Select(t => (Achievement)Activator.CreateInstance(t)).Select(a => a.TypeName);
         }
     }
