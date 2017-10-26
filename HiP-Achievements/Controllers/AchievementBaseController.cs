@@ -18,7 +18,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Achievement/[controller]")]
-    public abstract class AchievementBaseController<TArgs> : Controller where TArgs : AchievementArgs
+    public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs
     {
         private readonly EntityIndex _entityIndex;
         private readonly EventStoreClient _eventStore;
@@ -30,9 +30,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(typeof(int),201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
+        [ProducesResponseType(400)]
         public async Task<IActionResult> CreateAchievement([FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
@@ -88,8 +89,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return NoContent();
         }
-
-        protected abstract Task<ArgsValidationResult> ValidateActionArgs(TArgs args);
-
+        
     }
 }

@@ -18,7 +18,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Action/[controller]")]
-    public abstract class ActionBaseController<TArgs> : Controller where TArgs : ActionArgs
+    public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs
     {
 
         private readonly EntityIndex _entityIndex;
@@ -54,9 +54,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
         }
-
-        protected abstract Task<ArgsValidationResult> ValidateActionArgs(TArgs args);
-
+        
     }
 
 }
