@@ -40,7 +40,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
                 return Forbid();
-            
+
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
+
             var ev = new AchievementCreated
             {
                 Id = _entityIndex.NextId(ResourceType.Achievement),
@@ -69,6 +73,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
                 return Forbid();
 
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
 
             var ev = new AchievementUpdated
             {
@@ -81,5 +88,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return NoContent();
         }
+
+        protected abstract Task<ArgsValidationResult> ValidateActionArgs(TArgs args);
+
     }
 }

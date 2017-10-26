@@ -55,12 +55,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
         }
 
-        protected abstract Task<ActionArgsValidationResult> ValidateActionArgs(TArgs args);
+        protected abstract Task<ArgsValidationResult> ValidateActionArgs(TArgs args);
+
     }
 
-    public class ActionArgsValidationResult
-    {
-        public bool Success { get; set; }
-        public IActionResult ActionResult { get; set; }
-    }
 }
