@@ -35,7 +35,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
+
         }
+
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]

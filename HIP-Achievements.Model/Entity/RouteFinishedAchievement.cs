@@ -10,10 +10,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         {
             if (args.RouteId != null) RouteId = args.RouteId.Value;
         }
-
+        
         public RouteFinishedAchievement()
         {
         }
+
 
         public override string TypeName => "RouteFinished";
         public override AchievementResult CreateAchievementResult()

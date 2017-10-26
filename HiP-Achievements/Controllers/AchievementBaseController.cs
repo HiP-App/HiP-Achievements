@@ -18,6 +18,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Achievements/[controller]")]
+    
     public abstract class AchievementBaseController<TArgs> : Controller where TArgs : AchievementArgs
     {
         private readonly EntityIndex _entityIndex;
