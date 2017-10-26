@@ -62,7 +62,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
-        [ProducesResponseType(404)]
         public async Task<IActionResult> PutAsync(int id, [FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
