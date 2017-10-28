@@ -17,8 +17,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// </summary>
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
-    [Route("api/Action/[controller]")]
+    [Route("api/Actions/[controller]")]
     public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs
+
     {
 
         private readonly EntityIndex _entityIndex;

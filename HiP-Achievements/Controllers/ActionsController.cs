@@ -13,11 +13,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]
-    public class ActionController : Controller
+    public class ActionsController : Controller
     {
         private readonly CacheDatabaseManager _db;
 
-        public ActionController(CacheDatabaseManager db)
+        public ActionsController(CacheDatabaseManager db)
         {
             _db = db;
         }

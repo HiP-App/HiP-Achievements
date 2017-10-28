@@ -65,19 +65,22 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
 
-            var result = achievements
+            var query = achievements
                    .FilterByIds(args.Exclude, args.IncludeOnly)
                    .FilterByUser(args.Status, User.Identity)
                    .FilterByStatus(args.Status)
                    .FilterByTimestamp(args.Timestamp)
-                   .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .FilterIf(!string.IsNullOrEmpty(args.Query), x =>
                        x.Title.ToLower().Contains(args.Query.ToLower()) ||
                        x.Description.ToLower().Contains(args.Query.ToLower()))
                    .Sort(args.OrderBy,
                        ("id", x => x.Id),
                        ("title", x => x.Title),
-                       ("timestamp", x => x.Timestamp))
+                       ("timestamp", x => x.Timestamp)).ToList();
+
+            //MongoDB doesn't support querying on abstract properties, thus we filter for the TypeName seperately
+            var result = query.AsQueryable()
+                .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .PaginateAndSelect(args.Page, args.PageSize, x =>
                 {
                     var ar = x.CreateAchievementResult();
@@ -130,7 +133,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             else
             {
                 // Return direct URL
-                return $"{Request.Scheme}://{Request.Host}/api/images/{id}/";
+                return $"{Request.Scheme}://{Request.Host}/api/image/{id}/";
             }
         }
 
@@ -198,6 +201,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                         }
                         break;
 
+
                     case RouteFinishedAchievement e:
                         var visitedExhibitsIds = actions.OfType<ExhibitVisitedAction>().Select(x => x.EntityId).ToList();
                         if (routes.Items.Any(r => r.Id == e.RouteId && r.Exhibits.IsSubsetOf(visitedExhibitsIds)))
@@ -205,8 +209,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                             unlocked.Add(e);
                         }
                         break;
-
-                        // TODO: implement for other achievement types
                 }
             }
             var result = new AllItemsResult<AchievementResult>
@@ -221,12 +223,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         /// <summary>
         /// This method iterates over all classes that inherit from <see cref="Achievement"/> and selects their TypeNames
         /// </summary>
-        /// <returns></returns>
+        /// <remarks>
+        /// This only works if the derived class has a parameterless constructor, so that an instance can be created
+        /// </remarks>
+        /// <returns>All type names</returns>
         private IEnumerable<string> GetAllTypeNames()
         {
             return typeof(Achievement)
                 .Assembly.GetTypes()
                 .Where(t => t.IsSubclassOf(typeof(Achievement)) && !t.IsAbstract)
+                .Where(t => t.GetConstructor(Type.EmptyTypes) != null)
                 .Select(t => (Achievement)Activator.CreateInstance(t)).Select(a => a.TypeName);
         }
     }
