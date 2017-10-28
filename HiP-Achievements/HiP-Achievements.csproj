@@ -5,16 +5,9 @@
     <RootNamespace>PaderbornUniversity.SILab.Hip.Achievements</RootNamespace>
     <AssemblyName>HiP-Achievements</AssemblyName>
     <NoWarn>1701;1702;1705;1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DocumentationFile>bin\Release\netcoreapp2.0\HiP-Achievements.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp2.0\HiP-Achievements.xml</DocumentationFile>
-  </PropertyGroup>
-
+  
   <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
