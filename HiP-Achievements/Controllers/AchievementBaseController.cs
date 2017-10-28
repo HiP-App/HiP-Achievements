@@ -18,8 +18,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Achievements/[controller]")]
-    
-    public abstract class AchievementBaseController<TArgs> : Controller where TArgs : AchievementArgs
+    public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs
     {
         private readonly EntityIndex _entityIndex;
         private readonly EventStoreClient _eventStore;
@@ -31,7 +30,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(typeof(int),201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateAchievement([FromBody] TArgs args)
@@ -41,7 +40,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
                 return Forbid();
-            
+
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
+
             var ev = new AchievementCreated
             {
                 Id = _entityIndex.NextId(ResourceType.Achievement),
@@ -70,6 +73,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
                 return Forbid();
 
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
 
             var ev = new AchievementUpdated
             {
@@ -82,5 +88,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return NoContent();
         }
+        
     }
 }

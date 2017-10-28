@@ -15,6 +15,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.DataStore;
 using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
@@ -35,9 +36,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
-
         }
-
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]
@@ -173,7 +172,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
-        public IActionResult GetUnlocked()
+        public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -187,6 +186,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                                           .Where(x => x.UserId == User.Identity.GetUserIdentity());
 
             var unlocked = new List<Achievement>();
+
+            var client = new RoutesClient(_endpointConfig.DataStoreHost) { Authorization = Request.Headers["Authorization"] };
+            var routes = await client.GetAsync();
+
             foreach (var achievement in achievements)
             {
                 switch (achievement)
@@ -198,7 +201,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                         }
                         break;
 
-                        // TODO: implement for other achievement types
+
+                    case RouteFinishedAchievement e:
+                        var visitedExhibitsIds = actions.OfType<ExhibitVisitedAction>().Select(x => x.EntityId).ToList();
+                        if (routes.Items.Any(r => r.Id == e.RouteId && r.Exhibits.IsSubsetOf(visitedExhibitsIds)))
+                        {
+                            unlocked.Add(e);
+                        }
+                        break;
                 }
             }
             var result = new AllItemsResult<AchievementResult>
