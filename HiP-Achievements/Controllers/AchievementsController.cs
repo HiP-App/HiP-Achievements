@@ -66,19 +66,22 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
 
-            var result = achievements
+            var query = achievements
                    .FilterByIds(args.Exclude, args.IncludeOnly)
                    .FilterByUser(args.Status, User.Identity)
                    .FilterByStatus(args.Status)
                    .FilterByTimestamp(args.Timestamp)
-                   .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .FilterIf(!string.IsNullOrEmpty(args.Query), x =>
                        x.Title.ToLower().Contains(args.Query.ToLower()) ||
                        x.Description.ToLower().Contains(args.Query.ToLower()))
                    .Sort(args.OrderBy,
                        ("id", x => x.Id),
                        ("title", x => x.Title),
-                       ("timestamp", x => x.Timestamp))
+                       ("timestamp", x => x.Timestamp)).ToList();
+
+            //MongoDB doesn't support querying on abstract properties, thus we filter for the TypeName seperately
+            var result = query.AsQueryable()
+                .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .PaginateAndSelect(args.Page, args.PageSize, x =>
                 {
                     var ar = x.CreateAchievementResult();
