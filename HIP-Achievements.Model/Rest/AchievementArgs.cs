@@ -6,18 +6,20 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
     /// <summary>
     /// Model for creating new Achievements
     /// </summary>
-    public class AchievementArgs
+    public abstract class AchievementArgs
     {
         [Required]
         public string Title { get; set; }
 
-        [Required]
-        public AchievementType Type { get; set; }
-
-        public AchievementStatus Status { get; set; }
+        public AchievementStatus Status { get; set; } = AchievementStatus.Draft;
 
         public string Description { get; set; }
-        
+
         public int? NextId { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int Points { get; set; }
+
+        public abstract Achievement CreateAchievement();
     }
 }

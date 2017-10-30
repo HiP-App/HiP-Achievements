@@ -51,6 +51,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
             return CheckRoles(identity);
         }
 
+        public static bool IsAllowedToCreateImage(IIdentity identity, string ownerId)
+        {
+            bool isOwner = ownerId == identity.GetUserIdentity();
+            if (isOwner)
+                return true;
+
+            return CheckRoles(identity);
+        }
+
         //Check if the user has the nessesary roles
         static bool CheckRoles(IIdentity identity, UserRoles allowedToProceed = UserRoles.Administrator | UserRoles.Supervisor)
         {

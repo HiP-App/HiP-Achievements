@@ -9,7 +9,9 @@
   },
   "Endpoints": {
     "MongoDbHost": "mongodb://localhost:27017",
-    "MongoDbName": "main"
+    "MongoDbName": "main",
+    "ThumbnailUrlPattern": "https://docker-hip.cs.upb.de/develop/thumbnailservice/api/Thumbnails?Url=achievements/api/image/{0}/",
+    "DataStoreHost": "https://docker-hip.cs.uni-paderborn.de/develop/datastore"
   },
   "EventStore": {
     // To connect to an Event Store cluster use this instead:
@@ -21,4 +23,5 @@
     "Audience": "https://hip.cs.upb.de/API",
     "Authority": "https://hip.eu.auth0.com/"
   }
+
 }

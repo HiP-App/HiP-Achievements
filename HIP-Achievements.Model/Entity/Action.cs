@@ -1,11 +1,10 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
-using System.Runtime.Serialization;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
-    public class Action : ContentBase
+    public abstract class Action : ContentBase
     {
-        public ActionType Type { get; set; }
+        public abstract string TypeName { get; }
 
         /// <summary>
         /// Id of entity, which was completed
@@ -14,13 +13,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 
         public Action(ActionArgs args)
         {
-            Type = args.Type;
             EntityId = args.EntityId;
         }
-    }
-    public enum ActionType  
-    {
-        [EnumMember(Value = "ExhibitVisited")]
-        ExhibitVisited
+
+        public abstract ActionResult CreateActionResult();
     }
 }

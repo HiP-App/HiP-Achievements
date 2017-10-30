@@ -20,5 +20,16 @@
         /// automatically which might result in an invalid URL.
         /// </summary>
         public string SwaggerEndpoint { get; set; }
+
+        /// <remarks>
+        /// This property is optional: If no value is provided, no thumbnail URLs are generated - instead, direct URLs
+        /// to the original image files are then returned.
+        /// </remarks>
+        public string ThumbnailUrlPattern { get; set; }
+
+        /// <summary>
+        /// Endpoint of the Datastore
+        /// </summary>
+        public string DataStoreHost { get; set; }
     }
 }
