@@ -1,5 +1,6 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
+using System.Collections.Generic;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
@@ -13,6 +14,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         public override ActionResult CreateActionResult()
         {
             return new ExhibitVisitedActionResult(this);
+        }
+
+        public static List<Action> Factory(ExhibitVisitedActionsArgs args)
+        {
+            var result = new List<Action>();
+            foreach (var ActionArg in args.ToListActionArgs())
+            {
+                result.Add(new ExhibitVisitedAction((ExhibitVisitedActionArgs) ActionArg));
+            }
+            return result;         
         }
     }
 }

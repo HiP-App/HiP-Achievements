@@ -1,4 +1,5 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
@@ -12,5 +13,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
         public int EntityId { get; set; }
 
         public abstract Action CreateAction();
+    }
+
+    public abstract class ActionsArgs
+    {
+        /// <summary>
+        /// Id of entity, which was completed
+        /// </summary>
+        [Required]
+        public List<int> EntitiesId { get; set; }
+
+        public abstract List<Action> CreateActions();
+
+        public abstract List<ActionArgs> ToListActionArgs();
     }
 }

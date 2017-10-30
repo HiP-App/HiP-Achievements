@@ -6,6 +6,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
@@ -20,7 +21,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             _index = cache.Index<ExhibitsVisitedIndex>();
         }
 
-        protected override async Task<ArgsValidationResult> ValidateActionArgs(ExhibitVisitedActionArgs args)
+        protected override async Task<ArgsValidationResult> ValidateActionArgs(ActionArgs args)
         {
 
             //check if the user has visited the exhibit already
