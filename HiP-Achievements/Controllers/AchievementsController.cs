@@ -16,7 +16,6 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
-using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -37,6 +36,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
         }
+
 
         [HttpGet("ids")]
         [ProducesResponseType(200)]
@@ -130,7 +130,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 // Generate thumbnail URL (if a thumbnail URL pattern is configured)
                 return string.Format(_endpointConfig.ThumbnailUrlPattern, id);
             }
-
+            
             return "";
         }
 
@@ -169,6 +169,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
+        
         public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
@@ -183,7 +184,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                                           .Where(x => x.UserId == User.Identity.GetUserIdentity());
 
             var unlocked = new List<Achievement>();
-
             var client = new RoutesClient(_endpointConfig.DataStoreHost) { Authorization = Request.Headers["Authorization"] };
             var routes = await client.GetAsync();
 
@@ -206,6 +206,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                             unlocked.Add(e);
                         }
                         break;
+
                 }
             }
             var result = new AllItemsResult<AchievementResult>
