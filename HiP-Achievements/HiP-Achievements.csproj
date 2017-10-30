@@ -31,10 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\appsettings.Development.json.example" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\HIP-Achievements.Model\HIP-Achievements.Model.csproj" />
   </ItemGroup>
 
