@@ -4,14 +4,13 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <RootNamespace>PaderbornUniversity.SILab.Hip.Achievements</RootNamespace>
     <AssemblyName>HiP-Achievements</AssemblyName>
+    <NoWarn>1701;1702;1705;1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.0.2-rc" />
+    <PackageReference Include="HiP-DataStore.Sdk" Version="1.0.1-develop" />
     <PackageReference Include="HiP-WebserviceLib" Version="2.1.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />

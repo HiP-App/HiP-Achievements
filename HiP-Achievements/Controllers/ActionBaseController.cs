@@ -2,13 +2,13 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -18,14 +18,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Actions/[controller]")]
-
-    public class ActionBaseController<TArgs> : Controller where TArgs : ActionArgs
+    public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs
     {
-
         private readonly EntityIndex _entityIndex;
-        private readonly EventStoreClient _eventStore;
+        private readonly EventStoreService _eventStore;
 
-        public ActionBaseController(EventStoreClient eventStore, InMemoryCache cache)
+        public ActionBaseController(EventStoreService eventStore, InMemoryCache cache)
         {
             _eventStore = eventStore;
             _entityIndex = cache.Index<EntityIndex>();
@@ -34,21 +32,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
         public async Task<IActionResult> Post([FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // TODO : Validation check (e.g. exhibit exist) and User haven`t been there yet
-            //switch (args.Type)
-            //{
-            //    case Model.Entity.ActionType.ExhibitVisited:
-            //        if (!_entityIndex.Exists(ResourceType.))
-            //            ModelState.AddModelError("Exhibit", String.Format("Exhibit with Id: {0} doesn`t exist", args.EntityId));
-            //        break;
-            //}
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
 
-            var ev = new ActionCreated()
+            var ev = new ActionCreated
             {
                 Id = _entityIndex.NextId(ResourceType.Action),
                 UserId = User.Identity.GetUserIdentity(),
@@ -59,5 +53,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
         }
+        
     }
+
 }

@@ -7,14 +7,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
-using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.DataStore;
 using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
@@ -23,19 +24,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class AchievementsController : Controller
     {
-        private readonly EventStoreClient _eventStore;
+        private readonly EventStoreService _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly EntityIndex _entityIndex;
         private readonly EndpointConfig _endpointConfig;
 
-
-        public AchievementsController(EventStoreClient eventStore, CacheDatabaseManager db, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
+        public AchievementsController(EventStoreService eventStore, CacheDatabaseManager db, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
         {
             _eventStore = eventStore;
             _db = db;
             _entityIndex = cache.Index<EntityIndex>();
             _endpointConfig = endpointConfig.Value;
-
         }
 
 
@@ -66,24 +65,27 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
 
-            var result = achievements
+            var query = achievements
                    .FilterByIds(args.Exclude, args.IncludeOnly)
                    .FilterByUser(args.Status, User.Identity)
                    .FilterByStatus(args.Status)
                    .FilterByTimestamp(args.Timestamp)
-                   .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .FilterIf(!string.IsNullOrEmpty(args.Query), x =>
                        x.Title.ToLower().Contains(args.Query.ToLower()) ||
                        x.Description.ToLower().Contains(args.Query.ToLower()))
                    .Sort(args.OrderBy,
                        ("id", x => x.Id),
                        ("title", x => x.Title),
-                       ("timestamp", x => x.Timestamp))
+                       ("timestamp", x => x.Timestamp)).ToList();
+
+            //MongoDB doesn't support querying on abstract properties, thus we filter for the TypeName seperately
+            var result = query.AsQueryable()
+                .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
                    .PaginateAndSelect(args.Page, args.PageSize, x =>
                 {
                     var ar = x.CreateAchievementResult();
                     if (!string.IsNullOrEmpty(x.Filename))
-                        ar.ImageUrl = GenerateImageUrl(x.Id);
+                        ar.ThumbnailUrl = GenerateImageUrl(x.Id);
                     return ar;
                 });
 
@@ -116,7 +118,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var result = achievement.CreateAchievementResult();
             if (!string.IsNullOrEmpty(achievement.Filename))
-                result.ImageUrl = GenerateImageUrl(id);
+                result.ThumbnailUrl = GenerateImageUrl(id);
 
             return Ok(result);
         }
@@ -128,11 +130,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 // Generate thumbnail URL (if a thumbnail URL pattern is configured)
                 return string.Format(_endpointConfig.ThumbnailUrlPattern, id);
             }
-            else
-            {
-                // Return direct URL
-                return $"{Request.Scheme}://{Request.Host}/api/image/{id}/";
-            }
+            
+            return "";
         }
 
         [HttpDelete("{id}")]
@@ -170,7 +169,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
-        public IActionResult GetUnlocked()
+        
+        public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -184,6 +184,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                                           .Where(x => x.UserId == User.Identity.GetUserIdentity());
 
             var unlocked = new List<Achievement>();
+            var client = new RoutesClient(_endpointConfig.DataStoreHost) { Authorization = Request.Headers["Authorization"] };
+            var routes = await client.GetAsync();
+
             foreach (var achievement in achievements)
             {
                 switch (achievement)
@@ -195,7 +198,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                         }
                         break;
 
-                        // TODO: implement for other achievement types
+
+                    case RouteFinishedAchievement e:
+                        var visitedExhibitsIds = actions.OfType<ExhibitVisitedAction>().Select(x => x.EntityId).ToList();
+                        if (routes.Items.Any(r => r.Id == e.RouteId && r.Exhibits.IsSubsetOf(visitedExhibitsIds)))
+                        {
+                            unlocked.Add(e);
+                        }
+                        break;
+
                 }
             }
             var result = new AllItemsResult<AchievementResult>

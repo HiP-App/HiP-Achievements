@@ -2,13 +2,13 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -18,20 +18,20 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Achievements/[controller]")]
-    
-    public abstract class AchievementBaseController<TArgs> : Controller where TArgs : AchievementArgs
+    public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs
+
     {
         private readonly EntityIndex _entityIndex;
-        private readonly EventStoreClient _eventStore;
+        private readonly EventStoreService _eventStore;
 
-        public AchievementBaseController(EventStoreClient eventStore, InMemoryCache cache)
+        public AchievementBaseController(EventStoreService eventStore, InMemoryCache cache)
         {
             _eventStore = eventStore;
             _entityIndex = cache.Index<EntityIndex>();
         }
 
         [HttpPost]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(typeof(int),201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateAchievement([FromBody] TArgs args)
@@ -41,7 +41,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
                 return Forbid();
-            
+
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
+
             var ev = new AchievementCreated
             {
                 Id = _entityIndex.NextId(ResourceType.Achievement),
@@ -70,6 +74,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
                 return Forbid();
 
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
 
             var ev = new AchievementUpdated
             {
@@ -82,5 +89,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return NoContent();
         }
+        
     }
 }

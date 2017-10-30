@@ -110,7 +110,21 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
                 ? throw new InvalidSortKeyException(sortKey)
                 : query.OrderBy(expression);
         }
+
+        /// <summary>
+        /// Checks whether a is a subset of b
+        /// </summary>
+        /// <typeparam name="T">Element type</typeparam>
+        /// <param name="a">First IEnumerable</param>
+        /// <param name="b">Second IEnumerable</param>
+        /// <returns></returns>
+        public static bool IsSubsetOf<T>(this IEnumerable<T> a, IEnumerable<T> b)
+        {
+            return !a.Except(b).Any();
+        }
+
     }
+
 
     [Serializable]
     public class InvalidSortKeyException : Exception
