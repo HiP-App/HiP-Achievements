@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
