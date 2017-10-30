@@ -116,6 +116,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             app.UseAuthentication();
             app.UseMvc();
 
+            if (string.IsNullOrEmpty(endpointConfig.Value.ThumbnailUrlPattern))
+            {
+                var logger = loggerFactory.CreateLogger("Logging");
+                logger.LogWarning("The ThumbnailUrlPattern is not configured correctly!");
+            }
+
             // Swagger / Swashbuckle configuration:
             // Enable middleware to serve generated Swagger as a JSON endpoint
             app.UseSwagger(c =>
