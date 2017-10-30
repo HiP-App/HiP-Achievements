@@ -12,6 +12,8 @@ using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.Webservice;
 using Swashbuckle.AspNetCore.Swagger;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
+using System.IO;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
 {
@@ -41,6 +43,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 c.SwaggerDoc("v1", new Info { Title = Name, Version = Version });
                 c.OperationFilter<SwaggerOperationFilter>();
                 c.OperationFilter<SwaggerFileUploadOperationFilter>();
+                c.IncludeXmlComments(Path.ChangeExtension(typeof(Startup).Assembly.Location, ".xml"));
+                c.IncludeXmlComments(Path.ChangeExtension(typeof(ResourceType).Assembly.Location, ".xml"));
                 c.DescribeAllEnumsAsStrings();
             });
 
@@ -109,6 +113,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             app.UseAuthentication();
             app.UseMvc();
+
+            if (string.IsNullOrEmpty(endpointConfig.Value.ThumbnailUrlPattern))
+            {
+                var logger = loggerFactory.CreateLogger("Logging");
+                logger.LogWarning("The ThumbnailUrlPattern is not configured correctly!");
+            }
 
             // Swagger / Swashbuckle configuration:
             // Enable middleware to serve generated Swagger as a JSON endpoint

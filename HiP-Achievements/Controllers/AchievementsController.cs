@@ -37,6 +37,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _endpointConfig = endpointConfig.Value;
         }
 
+
         [HttpGet("ids")]
         [ProducesResponseType(200)]
         public IActionResult GetAllAchievements(AchievementQueryStatus status = AchievementQueryStatus.Published)
@@ -84,7 +85,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 {
                     var ar = x.CreateAchievementResult();
                     if (!string.IsNullOrEmpty(x.Filename))
-                        ar.ImageUrl = GenerateImageUrl(x.Id);
+                        ar.ThumbnailUrl = GenerateImageUrl(x.Id);
                     return ar;
                 });
 
@@ -117,7 +118,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var result = achievement.CreateAchievementResult();
             if (!string.IsNullOrEmpty(achievement.Filename))
-                result.ImageUrl = GenerateImageUrl(id);
+                result.ThumbnailUrl = GenerateImageUrl(id);
 
             return Ok(result);
         }
@@ -129,11 +130,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 // Generate thumbnail URL (if a thumbnail URL pattern is configured)
                 return string.Format(_endpointConfig.ThumbnailUrlPattern, id);
             }
-            else
-            {
-                // Return direct URL
-                return $"{Request.Scheme}://{Request.Host}/api/image/{id}/";
-            }
+            
+            return "";
         }
 
         [HttpDelete("{id}")]
@@ -171,6 +169,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
+        
         public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
@@ -185,7 +184,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                                           .Where(x => x.UserId == User.Identity.GetUserIdentity());
 
             var unlocked = new List<Achievement>();
-
             var client = new RoutesClient(_endpointConfig.DataStoreHost) { Authorization = Request.Headers["Authorization"] };
             var routes = await client.GetAsync();
 
@@ -208,6 +206,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                             unlocked.Add(e);
                         }
                         break;
+
                 }
             }
             var result = new AllItemsResult<AchievementResult>
