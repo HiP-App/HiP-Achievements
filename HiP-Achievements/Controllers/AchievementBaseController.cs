@@ -2,13 +2,13 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -22,9 +22,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
     {
         private readonly EntityIndex _entityIndex;
-        private readonly EventStoreClient _eventStore;
+        private readonly EventStoreService _eventStore;
 
-        public AchievementBaseController(EventStoreClient eventStore, InMemoryCache cache)
+        public AchievementBaseController(EventStoreService eventStore, InMemoryCache cache)
         {
             _eventStore = eventStore;
             _entityIndex = cache.Index<EntityIndex>();

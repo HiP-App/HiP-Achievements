@@ -5,11 +5,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PaderbornUniversity.SILab.Hip.EventSourcing;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.Webservice;
 using Swashbuckle.AspNetCore.Swagger;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
@@ -50,19 +50,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             services
                 .Configure<EndpointConfig>(Configuration.GetSection("Endpoints"))
+                .Configure<EventStoreConfig>(Configuration.GetSection("EventStore"))
                 .Configure<AuthConfig>(Configuration.GetSection("Auth"))
                 .Configure<UploadFilesConfig>(Configuration.GetSection("UploadFiles"))
                 .Configure<CorsConfig>(Configuration);
 
-
-
             services
-                .AddSingleton<EventStoreClient>()
+                .AddSingleton<EventStoreService>()
                 .AddSingleton<CacheDatabaseManager>()
                 .AddSingleton<InMemoryCache>()
                 .AddSingleton<IDomainIndex, EntityIndex>()
                 .AddSingleton<IDomainIndex, ExhibitsVisitedIndex>();
-
 
             var serviceProvider = services.BuildServiceProvider(); // allows us to actually get the configured services
             var authConfig = serviceProvider.GetService<IOptions<AuthConfig>>();

@@ -8,14 +8,16 @@
     }
   },
   "Endpoints": {
-    // To connect to an Event Store cluster use this instead:
-    // "EventStoreHost": "discover://username:password@myserver:1113",
-    "EventStoreHost": "tcp://localhost:1113",
-    "EventStoreStream": "Achievements-develop",
     "MongoDbHost": "mongodb://localhost:27017",
     "MongoDbName": "main",
     "ThumbnailUrlPattern": "https://docker-hip.cs.upb.de/develop/thumbnailservice/api/Thumbnails?Url=achievements/api/image/{0}/",
     "DataStoreHost": "https://docker-hip.cs.uni-paderborn.de/develop/datastore"
+  },
+  "EventStore": {
+    // To connect to an Event Store cluster use this instead:
+    // "Host": "discover://username:password@myserver:1113",
+    "Host": "tcp://localhost:1113",
+    "Stream": "Achievements-develop"
   },
   "Auth": {
     "Audience": "https://hip.cs.upb.de/API",
