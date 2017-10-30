@@ -85,7 +85,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 {
                     var ar = x.CreateAchievementResult();
                     if (!string.IsNullOrEmpty(x.Filename))
-                        ar.ImageUrl = GenerateImageUrl(x.Id);
+                        ar.ThumbnailUrl = GenerateImageUrl(x.Id);
                     return ar;
                 });
 
@@ -118,7 +118,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var result = achievement.CreateAchievementResult();
             if (!string.IsNullOrEmpty(achievement.Filename))
-                result.ImageUrl = GenerateImageUrl(id);
+                result.ThumbnailUrl = GenerateImageUrl(id);
 
             return Ok(result);
         }
@@ -130,11 +130,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 // Generate thumbnail URL (if a thumbnail URL pattern is configured)
                 return string.Format(_endpointConfig.ThumbnailUrlPattern, id);
             }
-            else
-            {
-                // Return direct URL
-                return $"{Request.Scheme}://{Request.Host}/api/image/{id}/";
-            }
+
+            return "";
         }
 
         [HttpDelete("{id}")]
