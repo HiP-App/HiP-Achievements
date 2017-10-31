@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
@@ -13,6 +12,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using System.Linq;
 using System;
 
+
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
     public class ExhibitVisitedController : ActionBaseController<ExhibitVisitedActionArgs>
@@ -20,7 +20,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
         private readonly EndpointConfig _endpointConfig;
         private readonly ExhibitsVisitedIndex _index;
 
-        public ExhibitVisitedController(EventStoreClient eventStore, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig) : base(eventStore, cache)
+        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig) : base(eventStore, cache)
         {
             _endpointConfig = endpointConfig.Value;
             _index = cache.Index<ExhibitsVisitedIndex>();
