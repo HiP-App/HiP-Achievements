@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
@@ -16,6 +15,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -23,14 +23,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class ImageController : Controller
     {
-        private readonly EventStoreClient _eventStore;
+        private readonly EventStoreService _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly UploadFilesConfig _filesConfig;
         private readonly EntityIndex _entityIndex;
 
-        public ImageController(EventStoreClient eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache)
+        public ImageController(EventStoreService eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache)
         {
-            _eventStore = eventStore;
+            _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
             _db = db;
             _filesConfig = filesConfig.Value;
             _entityIndex = cache.Index<EntityIndex>();

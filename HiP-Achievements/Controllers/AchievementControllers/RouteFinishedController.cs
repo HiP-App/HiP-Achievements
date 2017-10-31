@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementControllers
 {
@@ -13,7 +13,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementCont
     {
         private readonly EndpointConfig _endpointConfig;
 
-        public RouteFinishedController(EventStoreClient eventStore, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig) : base(eventStore, cache)
+        public RouteFinishedController(EventStoreService eventStore, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig) : base(eventStore, cache)
         {
             _endpointConfig = endpointConfig.Value;
         }

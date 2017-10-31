@@ -9,10 +9,6 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.0.2-rc" />
     <PackageReference Include="HiP-DataStore.Sdk" Version="1.0.1-develop" />
     <PackageReference Include="HiP-WebserviceLib" Version="2.1.0" />
