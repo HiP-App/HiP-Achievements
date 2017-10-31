@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
@@ -8,6 +6,8 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using System;
+using System.Threading.Tasks;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
@@ -22,8 +22,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     {
         // ReSharper disable All
         protected readonly EntityIndex _entityIndex;
-        protected readonly EventStoreClient _eventStore;
+        protected readonly EventStoreService _eventStore;
         // ReSharper Restore All
+
 
         public ActionBaseController(EventStoreService eventStore, InMemoryCache cache)
         {
