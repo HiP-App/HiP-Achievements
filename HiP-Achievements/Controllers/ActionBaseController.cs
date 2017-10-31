@@ -56,5 +56,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await _eventStore.AppendEventAsync(ev);
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
         }
+        
     }
+
 }

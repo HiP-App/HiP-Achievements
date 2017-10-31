@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
-
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
     public class ExhibitVisitedController : ActionBaseController<ExhibitVisitedActionArgs>
@@ -72,7 +71,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
 
         protected override async Task<ArgsValidationResult> ValidateActionArgs(ExhibitVisitedActionArgs args)
         {
-
             //check if the user has visited the exhibit already
             if (_index.Exists(User.Identity.GetUserIdentity(), args.EntityId))
             {
@@ -95,7 +93,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             {
                 return new ArgsValidationResult { ActionResult = NotFound(new { Message = "An exhibit with this id doesn't exist" }), Success = false };
             }
-
         }
     }
 }
