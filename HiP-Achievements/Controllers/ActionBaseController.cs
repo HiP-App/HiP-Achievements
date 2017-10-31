@@ -21,9 +21,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
     public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs
     {
-
+        // ReSharper disable All
         protected readonly EntityIndex _entityIndex;
         protected readonly EventStoreClient _eventStore;
+        // ReSharper Restore All
 
         public ActionBaseController(EventStoreClient eventStore, InMemoryCache cache)
         {

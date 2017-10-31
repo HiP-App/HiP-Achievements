@@ -1,17 +1,17 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
-using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
