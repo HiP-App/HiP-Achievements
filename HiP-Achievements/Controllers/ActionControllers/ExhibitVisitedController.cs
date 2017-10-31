@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
