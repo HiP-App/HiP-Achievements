@@ -19,9 +19,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         public static List<Action> Factory(ExhibitVisitedActionsArgs args)
         {
             var result = new List<Action>();
-            foreach (var ActionArg in args.ToListActionArgs())
+            foreach (var actionArg in args.ToListActionArgs())
             {
-                result.Add(new ExhibitVisitedAction((ExhibitVisitedActionArgs) ActionArg));
+                result.Add(new ExhibitVisitedAction((ExhibitVisitedActionArgs) actionArg));
             }
             return result;         
         }

@@ -9,8 +9,6 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -21,11 +19,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Authorize]
     [Route("api/Actions/[controller]")]
 
-    public abstract class ActionBaseController<TArgs> : Controller where TArgs : ActionArgs
+    public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs
     {
 
-        private readonly EntityIndex _entityIndex;
-        private readonly EventStoreClient _eventStore;
+        protected readonly EntityIndex _entityIndex;
+        protected readonly EventStoreClient _eventStore;
 
         public ActionBaseController(EventStoreClient eventStore, InMemoryCache cache)
         {
@@ -37,46 +35,28 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Post([FromBody] ActionsArgs args) 
+        public async Task<IActionResult> Post([FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var argList = args.ToListActionArgs();
-            var validationResultList = new List<(int,ArgsValidationResult)>();
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
 
-            foreach (var arg in argList)
+            var ev = new ActionCreated
             {
-                validationResultList.Add((arg.EntityId, await ValidateActionArgs(arg)));
-                if (!validationResultList.Last().Item2.Success)
-                {
-                    continue;
-                }
+                Id = _entityIndex.NextId(ResourceType.Action),
+                UserId = User.Identity.GetUserIdentity(),
+                Properties = args,
+                Timestamp = DateTimeOffset.Now
+            };
 
-                var ev = new ActionCreated
-                {
-                    Id = _entityIndex.NextId(ResourceType.Action),
-                    UserId = User.Identity.GetUserIdentity(),
-                    Properties = arg,
-                    Timestamp = DateTimeOffset.Now
-                };
-
-                await _eventStore.AppendEventAsync(ev);
-            }
-            if (validationResultList.Any(x => x.Item2.Success))
-            {
-                return StatusCode(201, String.Join(',', validationResultList.FindAll(x => x.Item2.Success)
-                                                                            .Select(x => x.Item1)
-                                                                            .ToArray()));
-            }
-            else
-            {
-                return StatusCode(400, validationResultList.Select(x => x.Item1).ToArray());
-            }
+            await _eventStore.AppendEventAsync(ev);
+            return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
         }
 
-        protected abstract Task<ArgsValidationResult> ValidateActionArgs(ActionArgs args);
-
     }
+
 
 }

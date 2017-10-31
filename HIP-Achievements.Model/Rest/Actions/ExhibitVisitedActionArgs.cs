@@ -14,9 +14,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions
         public override List<ActionArgs> ToListActionArgs()
         { 
             var result = new List<ActionArgs>();
-            foreach (var EntityId in EntitiesId)
+            foreach (var entityId in EntitiesId)
             {
-               result.Add(new ExhibitVisitedActionArgs() { EntityId = EntityId });
+               result.Add(new ExhibitVisitedActionArgs() { EntityId = entityId });
             }
             return result;
         }
