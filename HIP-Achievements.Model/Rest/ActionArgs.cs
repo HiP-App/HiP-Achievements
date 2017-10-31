@@ -21,7 +21,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
         /// Id of entity, which was completed
         /// </summary>
         [Required]
-        public List<int> EntitiesId { get; set; }
+        public List<int> EntityIds { get; set; }
 
         public abstract List<Action> CreateActions();
 
