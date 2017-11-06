@@ -31,5 +31,10 @@
         /// Endpoint of the Datastore
         /// </summary>
         public string DataStoreHost { get; set; }
+
+        /// <summary>
+        /// Endpoint of the ThumbnailService
+        /// </summary>
+        public string ThumbnailServiceHost { get; set; }
     }
 }

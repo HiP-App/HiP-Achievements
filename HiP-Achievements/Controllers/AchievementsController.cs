@@ -16,6 +16,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.DataStore;
+using PaderbornUniversity.SILab.Hip.ThumbnailService;
 using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
@@ -85,7 +86,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 {
                     var ar = x.CreateAchievementResult();
                     if (!string.IsNullOrEmpty(x.Filename))
-                        ar.ThumbnailUrl = GenerateImageUrl(x.Id);
+                        ar.ThumbnailUrl = UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, x.Id);
                     return ar;
                 });
 
@@ -118,20 +119,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var result = achievement.CreateAchievementResult();
             if (!string.IsNullOrEmpty(achievement.Filename))
-                result.ThumbnailUrl = GenerateImageUrl(id);
+                result.ThumbnailUrl = UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, id);
 
             return Ok(result);
-        }
-
-        private string GenerateImageUrl(int id)
-        {
-            if (!string.IsNullOrWhiteSpace(_endpointConfig.ThumbnailUrlPattern))
-            {
-                // Generate thumbnail URL (if a thumbnail URL pattern is configured)
-                return string.Format(_endpointConfig.ThumbnailUrlPattern, id);
-            }
-            
-            return "";
         }
 
         [HttpDelete("{id}")]
@@ -147,9 +137,21 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!_entityIndex.Exists(ResourceType.Achievement, id))
                 return NotFound();
 
-            var achievment = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
-            if (!UserPermissions.IsAllowedToDelete(User.Identity, achievment.Status, achievment.UserId))
+            var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            if (!UserPermissions.IsAllowedToDelete(User.Identity, achievement.Status, achievement.UserId))
                 return Forbid();
+
+
+            if (!string.IsNullOrEmpty(achievement.Filename))
+            {
+                System.IO.File.Delete(achievement.Filename);
+                var client =
+                    new ThumbnailsClient(_endpointConfig.ThumbnailServiceHost)
+                    {
+                        Authorization = Request.Headers["Authorization"]
+                    };
+                await client.DeleteAsync(UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, id));
+            }
 
             var ev = new AchievementDeleted()
             {
@@ -169,7 +171,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
-        
+
         public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
