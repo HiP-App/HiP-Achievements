@@ -83,6 +83,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             // something), so we manually request an instance here
             app.ApplicationServices.GetService<CacheDatabaseManager>();
 
+            // Ensures that "Request.Scheme" is correctly set to "https" in our nginx-environment
+            app.UseRequestSchemeFixer();
+
             //// Use CORS (important: must be before app.UseMvc())
             app.UseCors(builder =>
             {
