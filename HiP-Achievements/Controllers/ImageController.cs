@@ -16,6 +16,8 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.ThumbnailService;
+using FileStream = System.IO.FileStream;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -27,13 +29,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly CacheDatabaseManager _db;
         private readonly UploadFilesConfig _filesConfig;
         private readonly EntityIndex _entityIndex;
+        private readonly EndpointConfig _endpointConfig;
 
-        public ImageController(EventStoreService eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache)
+        public ImageController(EventStoreService eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
         {
             _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
             _db = db;
             _filesConfig = filesConfig.Value;
             _entityIndex = cache.Index<EntityIndex>();
+            _endpointConfig = endpointConfig.Value;
         }
 
         [HttpPut("{id}")]
@@ -59,10 +63,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var filePath = Path.Combine(_filesConfig.Path, id + "." + extension);
 
-            //Delete old file
+            //Delete old file and inform ThumbnailService
             if (System.IO.File.Exists(filePath))
             {
                 System.IO.File.Delete(filePath);
+                var client =
+                    new ThumbnailsClient(_endpointConfig.ThumbnailServiceHost)
+                    {
+                        Authorization = Request.Headers["Authorization"]
+                    };
+                await client.DeleteAsync(UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, id));
             }
 
             Directory.CreateDirectory(_filesConfig.Path);
