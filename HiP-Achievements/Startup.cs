@@ -11,8 +11,6 @@ using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.Webservice;
-using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using System.IO;
 using NSwag.AspNetCore;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
