@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
@@ -16,7 +12,10 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
-using PaderbornUniversity.SILab.Hip.ThumbnailService;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using FileStream = System.IO.FileStream;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
@@ -29,15 +28,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly CacheDatabaseManager _db;
         private readonly UploadFilesConfig _filesConfig;
         private readonly EntityIndex _entityIndex;
-        private readonly EndpointConfig _endpointConfig;
+        private readonly ThumbnailService.ThumbnailService _thumbnailService;
 
-        public ImageController(EventStoreService eventStore, CacheDatabaseManager db, IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
+        public ImageController(EventStoreService eventStore, CacheDatabaseManager db,
+            IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache,
+            ThumbnailService.ThumbnailService thumbnailService)
         {
             _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
             _db = db;
+            _thumbnailService = thumbnailService;
             _filesConfig = filesConfig.Value;
             _entityIndex = cache.Index<EntityIndex>();
-            _endpointConfig = endpointConfig.Value;
         }
 
         [HttpPut("{id}")]
@@ -67,12 +68,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (System.IO.File.Exists(filePath))
             {
                 System.IO.File.Delete(filePath);
-                var client =
-                    new ThumbnailsClient(_endpointConfig.ThumbnailServiceHost)
-                    {
-                        Authorization = Request.Headers["Authorization"]
-                    };
-                await client.DeleteAsync(UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, id));
+                await _thumbnailService.TryClearThumbnailCacheAsync(id);
             }
 
             Directory.CreateDirectory(_filesConfig.Path);

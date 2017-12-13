@@ -24,8 +24,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
 
         public static IQueryable<T> FilterByStatus<T>(this IQueryable<T> query, AchievementQueryStatus status) where T : Achievement
         {
-            Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
-            return query.FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus);
+            Enum.TryParse<AchievementStatus>(status.ToString(), out var achievementStatus);
+            return query.FilterIf(status != AchievementQueryStatus.All, x => x.Status == achievementStatus);
         }
 
         public static IQueryable<T> FilterByTimestamp<T>(this IQueryable<T> query, DateTimeOffset? timestamp) where T : ContentBase
