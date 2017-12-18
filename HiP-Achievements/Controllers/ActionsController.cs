@@ -26,7 +26,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(typeof(AllItemsResult<ActionResult>), 200)]
         public IActionResult GetAllActions()
         {
-            var query = _db.Database.GetCollection<Action>(ResourceType.Action.Name).AsQueryable();
+            var query = _db.Database.GetCollection<Action>(ResourceTypes.Action.Name).AsQueryable();
             var userId = User.Identity.GetUserIdentity();
             var result = query.Where(x => x.UserId == userId).ToList()
                               .Select(x => x.CreateActionResult())

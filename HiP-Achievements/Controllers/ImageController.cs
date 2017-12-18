@@ -48,11 +48,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+            if (!_entityIndex.Exists(ResourceTypes.Achievement, id))
                 return NotFound(new { Message = "No Achievement could be found with this id" });
 
 
-            if (!UserPermissions.IsAllowedToCreateImage(User.Identity, _entityIndex.Owner(ResourceType.Achievement, id)))
+            if (!UserPermissions.IsAllowedToCreateImage(User.Identity, _entityIndex.Owner(ResourceTypes.Achievement, id)))
             {
                 return Forbid();
             }
@@ -107,7 +107,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 return BadRequest(ModelState);
             }
 
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable()
+            var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable()
                 .FirstOrDefault(a => a.Id == id);
 
             if (achievement == null)

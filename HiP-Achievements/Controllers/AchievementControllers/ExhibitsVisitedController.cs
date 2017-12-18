@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
@@ -10,6 +11,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementCont
         public ExhibitsVisitedController(EventStoreService eventStore, InMemoryCache cache) : base(eventStore, cache)
         {
         }
+
+        protected override ResourceType ResourceType => ResourceTypes.ExhibitsVisitedAchievement;
 
         protected override Task<ArgsValidationResult> ValidateActionArgs(ExhibitsVisitedAchievementArgs args)
         {

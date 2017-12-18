@@ -35,6 +35,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         }
 
         public abstract AchievementResult CreateAchievementResult();
+
+        public abstract AchievementArgs CreateAchievementArgs();
+                
     }
 
     /// <remark>

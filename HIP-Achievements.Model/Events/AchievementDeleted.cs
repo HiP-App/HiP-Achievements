@@ -1,7 +1,9 @@
-﻿namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Events
+﻿using PaderbornUniversity.SILab.Hip.EventSourcing;
+
+namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Events
 {
     public class AchievementDeleted : UserActivityBaseEvent, IDeleteEvent
     {
-        public override ResourceType GetEntityType() => ResourceType.Achievement;
+        public override ResourceType GetEntityType() => ResourceTypes.Achievement;
     }
 }

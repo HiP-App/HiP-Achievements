@@ -10,7 +10,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         {
             if (args.RouteId != null) RouteId = args.RouteId.Value;
         }
-        
+
         public RouteFinishedAchievement()
         {
         }
@@ -20,6 +20,19 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         public override AchievementResult CreateAchievementResult()
         {
             return new RouteFinishedAchievementResult(this);
+        }
+
+        public override AchievementArgs CreateAchievementArgs()
+        {
+            return new RouteFinishedAchievementArgs()
+            {
+                Description = Description,
+                NextId = NextId,
+                Points = Points,
+                RouteId = RouteId,
+                Status = Status,
+                Title = Title
+            };
         }
     }
 }

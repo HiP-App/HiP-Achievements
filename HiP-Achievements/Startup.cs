@@ -12,6 +12,7 @@ using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.Webservice;
 using NSwag.AspNetCore;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
 {
@@ -25,6 +26,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+            ResourceTypes.Initialize();
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -106,6 +108,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 var logger = loggerFactory.CreateLogger("Logging");
                 logger.LogWarning("The ThumbnailUrlPattern is not configured correctly!");
             }
+
         }
     }
 }

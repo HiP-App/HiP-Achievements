@@ -16,9 +16,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// Base class for creating controllers for a specific action type
     /// </summary>
     /// <typeparam name="TArgs">Type of arguments</typeparam>
+    
     [Authorize]
     [Route("api/Actions/[controller]")]
-    public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs
+    public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs, new()
     {
         // ReSharper disable All
         protected readonly EntityIndex _entityIndex;
@@ -45,18 +46,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!validationResult.Success)
                 return validationResult.ActionResult;
 
-            var ev = new ActionCreated
-            {
-                Id = _entityIndex.NextId(ResourceType.Action),
-                UserId = User.Identity.GetUserIdentity(),
-                Properties = args,
-                Timestamp = DateTimeOffset.Now
-            };
-
-            await _eventStore.AppendEventAsync(ev);
-            return Created($"{Request.Scheme}://{Request.Host}/api/Action/{ev.Id}", ev.Id);
+            var id = _entityIndex.NextId(ResourceTypes.Action);
+            await EntityManager.CreateEntityAsync(_eventStore, args, ResourceType, id, User.Identity.GetUserIdentity());            
+            return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
         }
-        
+
     }
 
 }

@@ -25,5 +25,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
             }
             return result;         
         }
+
+        public override ActionArgs CreateActionArgs()
+        {
+            return new ExhibitVisitedActionArgs();
+        }
     }
 }

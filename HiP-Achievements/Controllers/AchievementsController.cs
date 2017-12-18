@@ -46,7 +46,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User.Identity, status);
             var userIdendity = User.Identity.GetUserIdentity();
             Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
-            var query = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+            var query = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable();
             var achievements = query.FilterIf(!isAllowedGetAll, x =>
             ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == userIdendity))
             .FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus)
@@ -64,7 +64,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+            var achievements = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable();
 
             var query = achievements
                    .FilterByIds(args.Exclude, args.IncludeOnly)
@@ -107,7 +107,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
 
             if (achievement == null)
             {
@@ -134,10 +134,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+            if (!_entityIndex.Exists(ResourceTypes.Achievement, id))
                 return NotFound();
 
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
             if (!UserPermissions.IsAllowedToDelete(User.Identity, achievement.Status, achievement.UserId))
                 return Forbid();
 
@@ -177,11 +177,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var achievements = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name)
+            var achievements = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name)
                                           .AsQueryable()
                                           .FilterByStatus(AchievementQueryStatus.Published);
 
-            var actions = _db.Database.GetCollection<Action>(ResourceType.Action.Name)
+            var actions = _db.Database.GetCollection<Action>(ResourceTypes.Action.Name)
                                           .AsQueryable()
                                           .Where(x => x.UserId == User.Identity.GetUserIdentity());
 

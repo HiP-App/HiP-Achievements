@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
@@ -17,6 +18,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementCont
         {
             _endpointConfig = endpointConfig.Value;
         }
+
+        protected override ResourceType ResourceType => ResourceTypes.RouteFinishedAchievement;
 
         protected override async Task<ArgsValidationResult> ValidateActionArgs(RouteFinishedAchievementArgs args)
         {

@@ -1,4 +1,5 @@
-﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+﻿using System;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {
@@ -17,5 +18,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
         }
 
         public abstract ActionResult CreateActionResult();
+
+        public abstract ActionArgs CreateActionArgs();
+
     }
 }

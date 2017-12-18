@@ -21,5 +21,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
         public int Points { get; set; }
 
         public abstract Achievement CreateAchievement();
+
+        public AchievementArgs() { }
     }
 }
