@@ -5,13 +5,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NSwag.AspNetCore;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.ThumbnailService;
 using PaderbornUniversity.SILab.Hip.Webservice;
-using NSwag.AspNetCore;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
 {
@@ -33,6 +35,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
         {
             services
                 .Configure<EndpointConfig>(Configuration.GetSection("Endpoints"))
+                .Configure<DataStoreConfig>(Configuration.GetSection("Endpoints"))
+                .Configure<ThumbnailConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<EventStoreConfig>(Configuration.GetSection("EventStore"))
                 .Configure<AuthConfig>(Configuration.GetSection("Auth"))
                 .Configure<UploadFilesConfig>(Configuration.GetSection("UploadFiles"))
@@ -42,6 +46,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .AddSingleton<EventStoreService>()
                 .AddSingleton<CacheDatabaseManager>()
                 .AddSingleton<InMemoryCache>()
+                .AddSingleton<DataStoreService>()
+                .AddSingleton<ThumbnailService.ThumbnailService>()
                 .AddSingleton<IDomainIndex, EntityIndex>()
                 .AddSingleton<IDomainIndex, ExhibitsVisitedIndex>();
 
@@ -100,12 +106,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             app.UseAuthentication();
             app.UseMvc();
             app.UseSwaggerUiHip();
-
-            if (string.IsNullOrEmpty(endpointConfig.Value.ThumbnailUrlPattern))
-            {
-                var logger = loggerFactory.CreateLogger("Logging");
-                logger.LogWarning("The ThumbnailUrlPattern is not configured correctly!");
-            }
         }
     }
 }

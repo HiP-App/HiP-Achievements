@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
@@ -7,23 +6,23 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
     public class ExhibitVisitedController : ActionBaseController<ExhibitVisitedActionArgs>
     {
-        private readonly EndpointConfig _endpointConfig;
         private readonly ExhibitsVisitedIndex _index;
+        private readonly DataStoreService _dataStoreService;
 
-        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig) : base(eventStore, cache)
+        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, DataStoreService dataStoreService) : base(eventStore, cache)
         {
-            _endpointConfig = endpointConfig.Value;
             _index = cache.Index<ExhibitsVisitedIndex>();
+            _dataStoreService = dataStoreService;
         }
 
 
@@ -78,15 +77,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             }
 
             //check if exhibits exists
-            var client = new ExhibitsClient(_endpointConfig.DataStoreHost)
-            {
-                Authorization = Request.Headers["Authorization"]
-            };
-
             try
             {
                 //this method throws a SwaggerException if the request fails 
-                await client.GetByIdAsync(args.EntityId, null);
+                await _dataStoreService.Exhibits.GetByIdAsync(args.EntityId, null);
                 return new ArgsValidationResult { Success = true };
             }
             catch (SwaggerException)
