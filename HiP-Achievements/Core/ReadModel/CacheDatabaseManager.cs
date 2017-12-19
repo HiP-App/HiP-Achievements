@@ -89,6 +89,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             updatedAchievement.LastModifiedBy = e.UserId;
                             updatedAchievement.Timestamp = e.Timestamp;
                             updatedAchievement.UserId = originalAchievement.UserId;
+                            updatedAchievement.Id = e.Id;
                             _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
                             break;
 
@@ -100,6 +101,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             updatedAction.LastModifiedBy = e.UserId;
                             updatedAction.Timestamp = e.Timestamp;
                             updatedAction.UserId = originalAction.UserId;
+                            updatedAction.Id = originalAction.Id;
                             _db.GetCollection<Action>(ResourceTypes.Action.Name).ReplaceOne(a => a.Id == e.Id, updatedAction);
                             break;
                     }
