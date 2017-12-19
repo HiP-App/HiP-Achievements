@@ -57,7 +57,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
 
                     case AchievementUpdated ev:
                         timestamp = ev.Timestamp;
-                        argumentDictionary[(ev.GetEntityType(), ev.Id)] = ev.Properties;
                         switch (ev.Properties)
                         {
                             case ExhibitsVisitedAchievementArgs args:
@@ -68,6 +67,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
                                 propEvents = EntityManager.CompareEntities((RouteFinishedAchievementArgs)argumentDictionary[(ev.GetEntityType(), ev.Id)], args, ResourceTypes.RouteFinishedAchievement, ev.Id, ev.UserId);
                                 break;
                         }
+                        argumentDictionary[(ev.GetEntityType(), ev.Id)] = ev.Properties;
                         break;
 
                     case AchievementDeleted ev:
