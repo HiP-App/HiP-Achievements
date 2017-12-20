@@ -2,7 +2,6 @@ Switch ("$env:Build_SourceBranchName")
 {
     "master" { $env:tag = "master"  }
     "develop" { $env:tag = "develop" }
-	"iss-hipcms-876" { $env:tag = "test" }
     default { exit }
 }
 
@@ -13,7 +12,7 @@ npm install
 
 Switch -Regex ("$env:Build_SourceBranchName") 
 {
-    "develop|iss-hipcms-876"{		
+    "develop"{		
 		npm --% publish --registry=%NPMFeed% --tag %tag%	
 	}
 
