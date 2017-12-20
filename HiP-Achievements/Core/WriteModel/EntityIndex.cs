@@ -104,8 +104,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
                     case DeletedEvent ev:
                         lock (_lockObject)
                         {
-                            var info3 = GetOrCreateEntityTypeInfo(type);
-                            info3.Entities.Remove(ev.Id);
+                            var info = GetOrCreateEntityTypeInfo(type);
+                            info.Entities.Remove(ev.Id);
                         }
                         break;
                 }
