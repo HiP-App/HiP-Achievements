@@ -83,8 +83,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     var achievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable()
                         .FirstOrDefault(a => a.Id == e.Id);
                     if (achievement != null)
+                    {
                         achievement.Filename = e.File;
-                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
+                        _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
+                    }
 
                     break;
             }
