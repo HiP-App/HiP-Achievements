@@ -11,9 +11,9 @@ $regUrl = $env:NPMFeed.Replace("http:","").Replace("https:","")
 Set-Content -Value "$($regUrl):_authToken=$env:MyGetKey" -Path ./.npmrc
 npm install
 
-Switch ("$env:Build_SourceBranchName") 
+Switch -Regex ("$env:Build_SourceBranchName") 
 {
-    "develop"{		
+    "develop|iss-hipcms-876"{		
 		npm --% publish --registry=%NPMFeed% --tag %tag%	
 	}
 
