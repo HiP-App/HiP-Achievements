@@ -10,9 +10,9 @@
   
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.0.3-rc" />
-    <PackageReference Include="HiP-DataStore.Sdk" Version="2.0.0" />
-    <PackageReference Include="HiP-ThumbnailService.Sdk" Version="1.0.0-develop" />
-    <PackageReference Include="HiP-WebserviceLib" Version="3.0.0-develop" />
+    <PackageReference Include="HiP-DataStore.Sdk" Version="3.1.1-develop" />
+    <PackageReference Include="HiP-ThumbnailService.Sdk" Version="1.1.2-develop" />
+    <PackageReference Include="HiP-WebserviceLib" Version="3.0.2-develop" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.1" />

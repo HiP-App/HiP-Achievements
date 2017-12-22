@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
@@ -13,10 +8,13 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
+using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
-using PaderbornUniversity.SILab.Hip.DataStore;
-using PaderbornUniversity.SILab.Hip.ThumbnailService;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
@@ -28,38 +26,46 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EventStoreService _eventStore;
         private readonly CacheDatabaseManager _db;
         private readonly EntityIndex _entityIndex;
-        private readonly EndpointConfig _endpointConfig;
+        private readonly DataStoreService _dataStoreService;
+        private readonly ThumbnailService.ThumbnailService _thumbnailService;
 
-        public AchievementsController(EventStoreService eventStore, CacheDatabaseManager db, InMemoryCache cache, IOptions<EndpointConfig> endpointConfig)
+        public AchievementsController(EventStoreService eventStore, CacheDatabaseManager db,
+            InMemoryCache cache, DataStoreService dataStoreService,
+            ThumbnailService.ThumbnailService thumbnailService)
         {
             _eventStore = eventStore;
             _db = db;
+            _dataStoreService = dataStoreService;
+            _thumbnailService = thumbnailService;
             _entityIndex = cache.Index<EntityIndex>();
-            _endpointConfig = endpointConfig.Value;
         }
 
 
         [HttpGet("ids")]
-        [ProducesResponseType(200)]
-        public IActionResult GetAllAchievements(AchievementQueryStatus status = AchievementQueryStatus.Published)
+        [ProducesResponseType(typeof(IEnumerable<int>), 200)]
+        public IActionResult GetAchievementIds(AchievementQueryStatus status = AchievementQueryStatus.Published)
         {
             bool isAllowedGetAll = UserPermissions.IsAllowedToGetAll(User.Identity, status);
             var userIdendity = User.Identity.GetUserIdentity();
-            Enum.TryParse(typeof(AchievementStatus), status.ToString(), out var achievementStatus);
-            var query = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable();
-            var achievements = query.FilterIf(!isAllowedGetAll, x =>
-            ((status == AchievementQueryStatus.All) && (x.Status == AchievementStatus.Published)) || (x.UserId == userIdendity))
-            .FilterIf(status != AchievementQueryStatus.All, x => x.Status == (AchievementStatus)achievementStatus)
-            .Select(x => x.Id)
-            .ToList();
+
+            Enum.TryParse<AchievementStatus>(status.ToString(), out var achievementStatus);
+            var query = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+            var achievements = query
+                .FilterIf(!isAllowedGetAll, x =>
+                    (status == AchievementQueryStatus.All && x.Status == AchievementStatus.Published) ||
+                    x.UserId == userIdendity)
+                .FilterIf(status != AchievementQueryStatus.All, x => x.Status == achievementStatus)
+                .Select(x => x.Id)
+                .ToList();
+
             return Ok(achievements);
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(AchievementResult), 200)]
+        [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public IActionResult GetAchievement(AchievementQueryArgs args)
+        public IActionResult GetAllAchievements(AchievementQueryArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -82,11 +88,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             //MongoDB doesn't support querying on abstract properties, thus we filter for the TypeName seperately
             var result = query.AsQueryable()
                 .FilterIf(!string.IsNullOrEmpty(args.TypeName), x => x.TypeName == args.TypeName)
-                   .PaginateAndSelect(args.Page, args.PageSize, x =>
+                .PaginateAndSelect(args.Page, args.PageSize, x =>
                 {
                     var ar = x.CreateAchievementResult();
                     if (!string.IsNullOrEmpty(x.Filename))
-                        ar.ThumbnailUrl = UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, x.Id);
+                        ar.ThumbnailUrl = _thumbnailService.GetThumbnailUrlArgument(x.Id);
                     return ar;
                 });
 
@@ -119,7 +125,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var result = achievement.CreateAchievementResult();
             if (!string.IsNullOrEmpty(achievement.Filename))
-                result.ThumbnailUrl = UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, id);
+                result.ThumbnailUrl = _thumbnailService.GetThumbnailUrlArgument(id);
 
             return Ok(result);
         }
@@ -145,12 +151,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!string.IsNullOrEmpty(achievement.Filename))
             {
                 System.IO.File.Delete(achievement.Filename);
-                var client =
-                    new ThumbnailsClient(_endpointConfig.ThumbnailServiceHost)
-                    {
-                        Authorization = Request.Headers["Authorization"]
-                    };
-                await client.DeleteAsync(UrlHelper.GenerateImageUrl(_endpointConfig.ThumbnailUrlPattern, id));
+                await _thumbnailService.TryClearThumbnailCacheAsync(id);
             }
 
             var ev = new AchievementDeleted()
@@ -186,8 +187,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                                           .Where(x => x.UserId == User.Identity.GetUserIdentity());
 
             var unlocked = new List<Achievement>();
-            var client = new RoutesClient(_endpointConfig.DataStoreHost) { Authorization = Request.Headers["Authorization"] };
-            var routes = await client.GetAsync();
+            var routes = await _dataStoreService.Routes.GetAsync();
 
             foreach (var achievement in achievements)
             {

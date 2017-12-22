@@ -13,21 +13,5 @@
         /// Default value: "main"
         /// </summary>
         public string MongoDbName { get; set; } = "main";
-        
-        /// <remarks>
-        /// This property is optional: If no value is provided, no thumbnail URLs are generated - instead, direct URLs
-        /// to the original image files are then returned.
-        /// </remarks>
-        public string ThumbnailUrlPattern { get; set; }
-
-        /// <summary>
-        /// Endpoint of the Datastore
-        /// </summary>
-        public string DataStoreHost { get; set; }
-
-        /// <summary>
-        /// Endpoint of the ThumbnailService
-        /// </summary>
-        public string ThumbnailServiceHost { get; set; }
     }
 }
