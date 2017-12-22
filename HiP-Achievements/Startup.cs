@@ -14,7 +14,6 @@ using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.ThumbnailService;
 using PaderbornUniversity.SILab.Hip.Webservice;
-using NSwag.AspNetCore;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 
 

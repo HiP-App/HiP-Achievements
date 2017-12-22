@@ -1,6 +1,4 @@
-﻿using System;
-using MongoDB.Bson.Serialization.Attributes;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.EventSourcing;

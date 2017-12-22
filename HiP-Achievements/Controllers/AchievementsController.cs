@@ -49,7 +49,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             var userIdendity = User.Identity.GetUserIdentity();
 
             Enum.TryParse<AchievementStatus>(status.ToString(), out var achievementStatus);
-            var query = _db.Database.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable();
+            var query = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable();
             var achievements = query
                 .FilterIf(!isAllowedGetAll, x =>
                     (status == AchievementQueryStatus.All && x.Status == AchievementStatus.Published) ||

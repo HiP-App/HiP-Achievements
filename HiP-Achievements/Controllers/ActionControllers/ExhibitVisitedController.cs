@@ -27,6 +27,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
 
         protected override ResourceType ResourceType => ResourceTypes.ExhibitVisitedAction;
 
+        /// <summary>
+        /// Posts multiple ExhibitVisistedActions
+        /// </summary>
         [HttpPost("Many")]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]

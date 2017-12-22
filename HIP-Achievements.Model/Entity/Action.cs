@@ -1,5 +1,4 @@
-﻿using System;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {

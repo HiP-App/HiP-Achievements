@@ -1,6 +1,5 @@
 ﻿using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using System;
 using System.Collections.Generic;
