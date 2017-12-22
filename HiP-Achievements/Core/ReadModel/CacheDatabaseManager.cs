@@ -114,9 +114,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                 case AchievementImageUpdated e:
                     var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable()
                         .FirstOrDefault(a => a.Id == e.Id);
-                    achievement.Filename = e.File;
-                    _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
-
+                    if (achievement != null)
+                    {
+                        achievement.Filename = e.File;
+                        _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
+                    }
                     break;
 
 
