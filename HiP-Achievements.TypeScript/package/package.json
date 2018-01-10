@@ -1,0 +1,28 @@
+{
+  "name": "hip-achievements",
+  "version": "1.0.0",
+  "description": "TypeScript client for Achievements",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HiP-App/HiP-Achievements/"
+  },
+  "keywords": [],
+  "author": "",
+  "main": "./dist/achievements.js",
+  "types": "./dist/achievements.d.ts",
+  "license": "Apache-2.0",
+  "outDir": "./dist",
+  "dependencies": {
+    "@angular/core": "4.3.6",
+    "@angular/http": "4.3.6",
+    "@angular/platform-browser": "4.3.6",
+    "@angular/common": "4.3.6",
+    "rxjs": "5.4.3",
+    "typescript":"2.5.2",
+    "zone.js": "0.8.18"
+  },
+  "scripts": {
+    "build":"tsc",
+    "prepare": "npm run build"
+  }
+}

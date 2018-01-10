@@ -25,7 +25,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             _dataStoreService = dataStoreService;
         }
 
-
+        /// <summary>
+        /// Posts multiple ExhibitVisistedActions at once (all contained within <paramref name="args"/>) 
+        /// </summary>
         [HttpPost("Many")]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
