@@ -27,19 +27,19 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 logger.LogWarning($"{nameof(AchievementsConfig.AchievementsHost)} is not configured correctly!");
         }
 
-        public ExhibitsVisitedClient ExhibitsVisited => new ExhibitsVisitedClient(_config.AchievementsHost)
+        public ExhibitsVisitedClient ExhibitsVisitedAchievement => new ExhibitsVisitedClient(_config.AchievementsHost)
         {
             Authorization = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
         };
 
-        public RouteFinishedClient RouteFinished => new RouteFinishedClient(_config.AchievementsHost)
+        public RouteFinishedClient RouteFinishedAchievement => new RouteFinishedClient(_config.AchievementsHost)
         {
             Authorization = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
         };
 
-        public ExhibitVisitedClient ExhibitVisisted => new ExhibitVisitedClient(_config.AchievementsHost)
+        public ExhibitVisitedClient ExhibitVisitedAction => new ExhibitVisitedClient(_config.AchievementsHost)
         {
             Authorization = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
-        };        
+        };
     }
 }
