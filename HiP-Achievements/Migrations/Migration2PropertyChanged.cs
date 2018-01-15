@@ -31,12 +31,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
                         {
                             case ExhibitsVisitedAchievementArgs args:
                                 e.AppendEvent(new CreatedEvent(ResourceTypes.ExhibitsVisitedAchievement.Name, ev.Id, ev.UserId));
-                                propEvents = EntityManager.CompareEntities(new ExhibitsVisitedAchievementArgs(), args, ResourceTypes.ExhibitsVisitedAchievement, ev.Id, ev.UserId);
+                                propEvents = EntityManager.CompareEntities(new ExhibitsVisitedAchievementArgs(), 
+                                                                           args, ResourceTypes.ExhibitsVisitedAchievement, ev.Id, ev.UserId);
                                 break;
 
                             case RouteFinishedAchievementArgs args:
                                 e.AppendEvent(new CreatedEvent(ResourceTypes.RouteFinishedAchievement.Name, ev.Id, ev.UserId));
-                                propEvents = EntityManager.CompareEntities(new RouteFinishedAchievementArgs(), args, ResourceTypes.RouteFinishedAchievement, ev.Id, ev.UserId);
+                                propEvents = EntityManager.CompareEntities(new RouteFinishedAchievementArgs(), 
+                                                                           args, ResourceTypes.RouteFinishedAchievement, ev.Id, ev.UserId);
                                 break;
                         }
 
@@ -49,7 +51,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
                         {
                             case ExhibitVisitedActionArgs args:
                                 e.AppendEvent(new CreatedEvent(ResourceTypes.ExhibitVisitedAction.Name, ev.Id, ev.UserId));
-                                propEvents = EntityManager.CompareEntities(new ExhibitVisitedActionArgs(), args, ResourceTypes.ExhibitVisitedAction, ev.Id, ev.UserId);
+                                propEvents = EntityManager.CompareEntities(new ExhibitVisitedActionArgs(), 
+                                                                           args, ResourceTypes.ExhibitVisitedAction, ev.Id, ev.UserId);
                                 break;
 
                         }
@@ -60,11 +63,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
                         switch (ev.Properties)
                         {
                             case ExhibitsVisitedAchievementArgs args:
-                                propEvents = EntityManager.CompareEntities((ExhibitsVisitedAchievementArgs)argumentDictionary[(ev.GetEntityType(), ev.Id)], args, ResourceTypes.ExhibitsVisitedAchievement, ev.Id, ev.UserId);
+                                propEvents = EntityManager.CompareEntities((ExhibitsVisitedAchievementArgs)argumentDictionary[(ev.GetEntityType(), ev.Id)], 
+                                                                           args, ResourceTypes.ExhibitsVisitedAchievement, ev.Id, ev.UserId);
                                 break;
 
                             case RouteFinishedAchievementArgs args:
-                                propEvents = EntityManager.CompareEntities((RouteFinishedAchievementArgs)argumentDictionary[(ev.GetEntityType(), ev.Id)], args, ResourceTypes.RouteFinishedAchievement, ev.Id, ev.UserId);
+                                propEvents = EntityManager.CompareEntities((RouteFinishedAchievementArgs)argumentDictionary[(ev.GetEntityType(), ev.Id)], 
+                                                                           args, ResourceTypes.RouteFinishedAchievement, ev.Id, ev.UserId);
                                 break;
                         }
                         argumentDictionary[(ev.GetEntityType(), ev.Id)] = ev.Properties;
