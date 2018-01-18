@@ -1,11 +1,11 @@
 ﻿using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Events;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
 {
@@ -71,37 +71,43 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
 
         public void ApplyEvent(IEvent e)
         {
-            switch (e)
+            if (e is BaseEvent baseEvent)
             {
-                case ICreateEvent ev:
-                    lock (_lockObject)
-                    {
-                        var user = (ev as UserActivityBaseEvent)?.UserId;
-                        var info = GetOrCreateEntityTypeInfo(ev.GetEntityType());
-                        info.MaximumId = Math.Max(info.MaximumId, ev.Id);
-                        info.Entities.Add(ev.Id, new EntityInfo { UserId = user });
-                    }
-                    break;
-                case IUpdateEvent ev:
-                    lock (_lockObject)
-                    {
-                        var owner = (ev as UserActivityBaseEvent)?.UserId;
-                        var info = GetOrCreateEntityTypeInfo(ev.GetEntityType());
-                        if (info.Entities.All(x => x.Value.UserId != owner))
-                        {
-                            info.MaximumId = Math.Max(info.MaximumId, ev.Id);
-                            info.Entities.Add(ev.Id, new EntityInfo { UserId = owner });
-                        }
-                    }
-                    break;
+                ResourceType type = baseEvent.GetEntityType();
+                if (type.BaseResourceType == ResourceTypes.Achievement) type = ResourceTypes.Achievement;
 
-                case IDeleteEvent ev:
-                    lock (_lockObject)
-                    {
-                        var info3 = GetOrCreateEntityTypeInfo(ev.GetEntityType());
-                        info3.Entities.Remove(ev.Id);
-                    }
-                    break;
+                switch (e)
+                {
+                    case CreatedEvent ev:
+                        lock (_lockObject)
+                        {
+                            var user = ev.UserId;
+                            var info = GetOrCreateEntityTypeInfo(type);
+                            info.MaximumId = Math.Max(info.MaximumId, ev.Id);
+                            info.Entities.Add(ev.Id, new EntityInfo { UserId = user });
+                        }
+                        break;
+                    case PropertyChangedEvent ev:
+                        lock (_lockObject)
+                        {
+                            var owner = ev.UserId;
+                            var info = GetOrCreateEntityTypeInfo(type);
+                            if (info.Entities.All(x => x.Value.UserId != owner))
+                            {
+                                info.MaximumId = Math.Max(info.MaximumId, ev.Id);
+                                info.Entities.Add(ev.Id, new EntityInfo { UserId = owner });
+                            }
+                        }
+                        break;
+
+                    case DeletedEvent ev:
+                        lock (_lockObject)
+                        {
+                            var info = GetOrCreateEntityTypeInfo(type);
+                            info.Entities.Remove(ev.Id);
+                        }
+                        break;
+                }
             }
         }
 

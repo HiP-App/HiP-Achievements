@@ -1,10 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
@@ -18,7 +16,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     /// <typeparam name="TArgs">Type of arguments</typeparam>
     [Authorize]
     [Route("api/Achievements/[controller]")]
-    public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs
+    public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs, new()
 
     {
         private readonly EntityIndex _entityIndex;
@@ -31,7 +29,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(int),201)]
+        [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(403)]
         public async Task<IActionResult> CreateAchievement([FromBody] TArgs args)
@@ -39,23 +37,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status))
+            if (!UserPermissions.IsAllowedToCreate(User.Identity, args.Status) || User.Identity.GetUserIdentity() == null)
                 return Forbid();
 
             var validationResult = await ValidateActionArgs(args);
             if (!validationResult.Success)
                 return validationResult.ActionResult;
 
-            var ev = new AchievementCreated
-            {
-                Id = _entityIndex.NextId(ResourceType.Achievement),
-                UserId = User.Identity.GetUserIdentity(),
-                Properties = args,
-                Timestamp = DateTimeOffset.Now
-            };
+            var id = _entityIndex.NextId(ResourceTypes.Achievement);
+            await EntityManager.CreateEntityAsync(_eventStore, args, ResourceType, id, User.Identity.GetUserIdentity());
 
-            await _eventStore.AppendEventAsync(ev);
-            return Created($"{Request.Scheme}://{Request.Host}/api/Achievements/{ev.Id}", ev.Id);
+            //await _eventStore.AppendEventAsync(ev);
+            return Created($"{Request.Scheme}://{Request.Host}/api/Achievements/{id}", id);
         }
 
         [HttpPut("{id}")]
@@ -68,27 +61,20 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!_entityIndex.Exists(ResourceType.Achievement, id))
+            if (!_entityIndex.Exists(ResourceTypes.Achievement, id))
                 return NotFound();
 
-            if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceType.Achievement, id)))
+            if (!UserPermissions.IsAllowedToEdit(User.Identity, args.Status, _entityIndex.Owner(ResourceTypes.Achievement, id)) || User.Identity.GetUserIdentity() == null)
                 return Forbid();
 
             var validationResult = await ValidateActionArgs(args);
             if (!validationResult.Success)
                 return validationResult.ActionResult;
 
-            var ev = new AchievementUpdated
-            {
-                Id = id,
-                Properties = args,
-                UserId = User.Identity.GetUserIdentity(),
-                Timestamp = DateTime.Now
-            };
-
-            await _eventStore.AppendEventAsync(ev);
+            var currentArgs = await EventStreamExtensions.GetCurrentEntityAsync<TArgs>(_eventStore.EventStream, ResourceType, id);
+            await EntityManager.UpdateEntityAsync(_eventStore, currentArgs, args, ResourceType, id, User.Identity.GetUserIdentity());
             return NoContent();
         }
-        
+
     }
 }

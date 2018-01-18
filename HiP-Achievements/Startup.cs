@@ -14,6 +14,8 @@ using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.ThumbnailService;
 using PaderbornUniversity.SILab.Hip.Webservice;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
+
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
 {
@@ -27,6 +29,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
+            ResourceTypes.Initialize();
         }
 
         public IConfigurationRoot Configuration { get; }

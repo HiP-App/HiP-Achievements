@@ -1,4 +1,6 @@
-﻿namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Events
+﻿using PaderbornUniversity.SILab.Hip.EventSourcing;
+
+namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Events
 {
     public class AchievementImageUpdated : UserActivityBaseEvent, IUpdateEvent
     {
@@ -6,7 +8,7 @@
 
         public override ResourceType GetEntityType()
         {
-            return ResourceType.Achievement;
+            return ResourceTypes.Achievement;
         }
     }
 }

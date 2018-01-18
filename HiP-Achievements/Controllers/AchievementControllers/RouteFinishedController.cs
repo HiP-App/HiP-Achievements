@@ -1,9 +1,9 @@
-﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
+﻿using System.Threading.Tasks;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
-using System.Threading.Tasks;
-
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementControllers
 {
 
@@ -15,6 +15,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementCont
         {
             _dataStoreService = dataStoreService;
         }
+
+        protected override ResourceType ResourceType => ResourceTypes.RouteFinishedAchievement;
 
         protected override async Task<ArgsValidationResult> ValidateActionArgs(RouteFinishedAchievementArgs args)
         {

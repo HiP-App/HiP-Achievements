@@ -4,8 +4,10 @@ using MongoDB.Driver;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Events;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using System;
 using System.Linq;
@@ -48,46 +50,78 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
         {
             switch (ev)
             {
-                case AchievementCreated e:
-                    var newAchievement = e.Properties.CreateAchievement();
-                    newAchievement.Id = e.Id;
-                    newAchievement.UserId = e.UserId;
-                    newAchievement.LastModifiedBy = e.UserId;
-                    newAchievement.Timestamp = e.Timestamp;
-                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).InsertOne(newAchievement);
+                case CreatedEvent e:
+                    var resourceType = e.GetEntityType();
+                    switch (resourceType)
+                    {
+                        case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Achievement:
+                            var achievementArgs = (AchievementArgs)Activator.CreateInstance(resourceType.Type, true);
+                            var newAchievement = achievementArgs.CreateAchievement();
+                            newAchievement.Id = e.Id;
+                            newAchievement.UserId = e.UserId;
+                            newAchievement.LastModifiedBy = e.UserId;
+                            newAchievement.Timestamp = e.Timestamp;
+                            _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).InsertOne(newAchievement);
+                            break;
+                        case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Action:
+                            var actionArgs = (ActionArgs)Activator.CreateInstance(resourceType.Type, true);
+                            var newAction = actionArgs.CreateAction();
+                            newAction.Id = e.Id;
+                            newAction.UserId = e.UserId;
+                            newAction.LastModifiedBy = e.UserId;
+                            newAction.Timestamp = e.Timestamp;
+                            _db.GetCollection<Action>(ResourceTypes.Action.Name).InsertOne(newAction);
+                            break;
+
+                    }
                     break;
 
-                case AchievementDeleted e:
-                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).DeleteOne(a => a.Id == e.Id);
-                    break;
-                case AchievementUpdated e:
-                    var originalAchievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable().First(a => a.Id == e.Id);
-                    var updatedAchievement = e.Properties.CreateAchievement();
-                    updatedAchievement.Id = e.Id;
-                    updatedAchievement.UserId = originalAchievement.UserId;
-                    updatedAchievement.LastModifiedBy = e.UserId;
-                    updatedAchievement.Timestamp = e.Timestamp;
-                    _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
+                case PropertyChangedEvent e:
+                    resourceType = e.GetEntityType();
+
+                    switch (resourceType)
+                    {
+                        case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Achievement:
+                            var originalAchievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().First(a => a.Id == e.Id);
+                            var achievementArgs = originalAchievement.CreateAchievementArgs();
+                            e.ApplyTo(achievementArgs);
+                            var updatedAchievement = (Achievement)Activator.CreateInstance(originalAchievement.GetType(), achievementArgs);
+                            updatedAchievement.LastModifiedBy = e.UserId;
+                            updatedAchievement.Timestamp = e.Timestamp;
+                            updatedAchievement.UserId = originalAchievement.UserId;
+                            updatedAchievement.Id = e.Id;
+                            _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
+                            break;
+
+                        case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Action:
+                            var originalAction = _db.GetCollection<Action>(ResourceTypes.Action.Name).AsQueryable().First(a => a.Id == e.Id);
+                            var actionArgs = originalAction.CreateActionArgs();
+                            e.ApplyTo(actionArgs);
+                            var updatedAction = (Action)Activator.CreateInstance(originalAction.GetType(), actionArgs);
+                            updatedAction.LastModifiedBy = e.UserId;
+                            updatedAction.Timestamp = e.Timestamp;
+                            updatedAction.UserId = originalAction.UserId;
+                            updatedAction.Id = originalAction.Id;
+                            _db.GetCollection<Action>(ResourceTypes.Action.Name).ReplaceOne(a => a.Id == e.Id, updatedAction);
+                            break;
+                    }
                     break;
 
-                case ActionCreated e:
-                    var newAction = e.Properties.CreateAction();
-                    newAction.Id = e.Id;
-                    newAction.UserId = e.UserId;
-                    newAction.LastModifiedBy = e.UserId;
-                    newAction.Timestamp = e.Timestamp;
-                    _db.GetCollection<Action>(ResourceType.Action.Name).InsertOne(newAction);
+                case DeletedEvent e:
+                    _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).DeleteOne(a => a.Id == e.Id);
                     break;
 
                 case AchievementImageUpdated e:
-                    var achievement = _db.GetCollection<Achievement>(ResourceType.Achievement.Name).AsQueryable()
+                    var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable()
                         .FirstOrDefault(a => a.Id == e.Id);
                     if (achievement != null)
                     {
                         achievement.Filename = e.File;
-                        _db.GetCollection<Achievement>(ResourceType.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
+                        _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
                     }
                     break;
+
+
             }
 
         }

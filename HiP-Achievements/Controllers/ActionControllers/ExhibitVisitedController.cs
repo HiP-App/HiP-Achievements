@@ -25,14 +25,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             _dataStoreService = dataStoreService;
         }
 
+        protected override ResourceType ResourceType => ResourceTypes.ExhibitVisitedAction;
+
         /// <summary>
-        /// Posts multiple ExhibitVisistedActions at once (all contained within <paramref name="args"/>) 
+        /// Posts multiple ExhibitVisistedActions
+
         /// </summary>
         [HttpPost("Many")]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Post([FromBody] ExhibitVisitedActionsArgs args)
+        public async Task<IActionResult> PostMany([FromBody] ExhibitVisitedActionsArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -50,7 +53,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
 
                 var ev = new ActionCreated
                 {
-                    Id = _entityIndex.NextId(ResourceType.Action),
+                    Id = _entityIndex.NextId(ResourceTypes.Action),
                     UserId = User.Identity.GetUserIdentity(),
                     Properties = arg,
                     Timestamp = DateTimeOffset.Now
