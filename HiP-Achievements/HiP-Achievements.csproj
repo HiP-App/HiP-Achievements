@@ -6,13 +6,14 @@
     <AssemblyName>HiP-Achievements</AssemblyName>
     <NoWarn>1701;1702;1705;1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.0.3-rc" />
     <PackageReference Include="HiP-DataStore.Sdk" Version="3.2.0-develop" />
     <PackageReference Include="HiP-ThumbnailService.Sdk" Version="1.1.2-develop" />
-    <PackageReference Include="HiP-WebserviceLib" Version="3.0.2-develop" />
+    <PackageReference Include="HiP-WebserviceLib" Version="3.1.0-develop" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.1" />
@@ -24,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.1" />
+    <PackageReference Include="NSwag.MSBuild" Version="11.12.13" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,4 +36,9 @@
     <ProjectReference Include="..\HIP-Achievements.Model\HIP-Achievements.Model.csproj" />
   </ItemGroup>
 
+  <Target Name="NSwag" AfterTargets="Build" Condition="'$(OS)'=='Windows_NT'">
+    <Exec Command="$(NSwagExe_Core20) webapi2swagger /assembly:$(TargetPath) /output:../swagger.json /defaultPropertyNameHandling:camelCase" />
+    <Exec Command="$(NSwagExe_Core20) swagger2csclient /input:../swagger.json /output:../$(ProjectName).Sdk/NSwag.g.cs /namespace:$(RootNamespace) /clientBaseClass:NSwagClientBase /useHttpClientCreationMethod:true /generateOptionalParameters:true" />
+    <Exec Command="$(NSwagExe_Core20) swagger2tsclient /input:../swagger.json /output:../$(ProjectName).TypeScript/package/lib/$(ProjectName).ts /baseUrlTokenName:$(ProjectName.Replace('-','_'))_URL /template:angular /clientBaseClass:NSwagClientBase /extensionCode:../$(ProjectName).TypeScript/NSwagClientBase.ts /injectionTokenType:InjectionToken  /generateOptionalParameters:true /useTransformOptionsMethod:true" />
+  </Target>
 </Project>

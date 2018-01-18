@@ -144,6 +144,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 return NotFound();
 
             var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().First(a => a.Id == id);
+
             if (!UserPermissions.IsAllowedToDelete(User.Identity, achievement.Status, achievement.UserId))
                 return Forbid();
 

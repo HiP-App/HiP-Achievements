@@ -29,6 +29,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
 
         /// <summary>
         /// Posts multiple ExhibitVisistedActions
+
         /// </summary>
         [HttpPost("Many")]
         [ProducesResponseType(typeof(int), 201)]

@@ -11,6 +11,14 @@ appsettings.Development.json
 *.userosscache
 *.sln.docstates
 
+# Generated files (NSwag)
+swagger.json
+*.Sdk/*.g.cs
+*.TypeScript/package/dist/
+*.TypeScript/package/lib/
+*.TypeScript/package/node_modules/
+*.TypeScript/package/*.tgz
+*.TypeScript/package/.npmrc
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
