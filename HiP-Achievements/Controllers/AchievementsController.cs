@@ -5,7 +5,6 @@ using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
@@ -150,18 +149,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             if (!string.IsNullOrEmpty(achievement.Filename))
             {
-                System.IO.File.Delete(achievement.Filename);
+                if (System.IO.File.Exists(achievement.Filename))
+                    System.IO.File.Delete(achievement.Filename);
                 await _thumbnailService.TryClearThumbnailCacheAsync(id);
             }
 
-            var ev = new AchievementDeleted()
-            {
-                Id = id,
-                UserId = User.Identity.GetUserIdentity(),
-                Timestamp = DateTime.Now
-            };
-
-            await _eventStore.AppendEventAsync(ev);
+            //we use the BaseResourceType here
+            await EntityManager.DeleteEntityAsync(_eventStore, ResourceTypes.Achievement, id, User.Identity.GetUserIdentity());
             return NoContent();
         }
 
