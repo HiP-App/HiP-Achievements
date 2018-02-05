@@ -90,6 +90,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             updatedAchievement.Timestamp = e.Timestamp;
                             updatedAchievement.UserId = originalAchievement.UserId;
                             updatedAchievement.Id = e.Id;
+                            updatedAchievement.Filename = originalAchievement.Filename;
                             _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
                             break;
 
