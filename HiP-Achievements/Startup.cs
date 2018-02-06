@@ -113,7 +113,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             app.UseMvc();
             app.UseSwaggerUiHip();
 
-        loggerFactory.CreateLogger("ApplicationStartup").LogInformation("Achievements API started successfully");
+            loggerFactory.CreateLogger("ApplicationStartup").LogInformation("Achievements API started successfully");
         }
     }
 }
