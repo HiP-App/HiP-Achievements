@@ -15,6 +15,7 @@ using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.ThumbnailService;
 using PaderbornUniversity.SILab.Hip.Webservice;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
+using PaderbornUniversity.SILab.Hip.Webservice.Logging;
 
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
@@ -43,6 +44,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .Configure<EventStoreConfig>(Configuration.GetSection("EventStore"))
                 .Configure<AuthConfig>(Configuration.GetSection("Auth"))
                 .Configure<UploadFilesConfig>(Configuration.GetSection("UploadFiles"))
+                .Configure<LoggingConfig>(Configuration.GetSection("HiPLoggerConfig"))
                 .Configure<CorsConfig>(Configuration);
 
             services
@@ -83,10 +85,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory,
-            IOptions<CorsConfig> corsConfig, IOptions<EndpointConfig> endpointConfig)
+            IOptions<CorsConfig> corsConfig, IOptions<EndpointConfig> endpointConfig, IOptions<LoggingConfig> loggingConfig)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"))
-                         .AddDebug();
+                         .AddDebug()
+                         .AddHipLogger(loggingConfig.Value);
 
             // CacheDatabaseManager should start up immediately (not only when injected into a controller or
             // something), so we manually request an instance here
@@ -109,6 +112,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             app.UseAuthentication();
             app.UseMvc();
             app.UseSwaggerUiHip();
+
+            loggerFactory.CreateLogger("ApplicationStartup").LogInformation("Achievements API started successfully");
         }
     }
 }
