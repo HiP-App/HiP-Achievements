@@ -1,16 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ActionResult = PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.ActionResult;
+using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
@@ -18,11 +22,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
     {
         private readonly ExhibitsVisitedIndex _index;
         private readonly DataStoreService _dataStoreService;
+        private readonly CacheDatabaseManager _db;
 
-        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, DataStoreService dataStoreService) : base(eventStore, cache)
+        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, DataStoreService dataStoreService, CacheDatabaseManager db) : base(eventStore, cache)
         {
             _index = cache.Index<ExhibitsVisitedIndex>();
             _dataStoreService = dataStoreService;
+            _db = db;
         }
 
         protected override ResourceType ResourceType => ResourceTypes.ExhibitVisitedAction;
@@ -49,16 +55,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
                 {
                     continue;
                 }
-
-                var ev = new ActionCreated
-                {
-                    Id = _entityIndex.NextId(ResourceTypes.Action),
-                    UserId = User.Identity.GetUserIdentity(),
-                    Properties = arg,
-                    Timestamp = DateTimeOffset.Now
-                };
-
-                await _eventStore.AppendEventAsync(ev);
+                var id = _entityIndex.NextId(ResourceTypes.Action);
+                await EntityManager.CreateEntityAsync(_eventStore, (ExhibitVisitedActionArgs)arg, ResourceType, id, User.Identity.GetUserIdentity());
             }
             if (validationResultList.Any(x => x.Item2.Success))
             {
@@ -72,6 +70,37 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             }
         }
 
+        /// <summary>
+        /// Get all Actions of Exhibit Visited type of all users by exhibit ID
+        /// </summary>
+        /// <param name="exhibitId"></param>
+        /// <param name="Timestamp"></param>
+        /// <returns></returns>
+        [HttpGet("All/{exhibitId}")]
+        [ProducesResponseType(typeof(AllItemsResult<ActionResult>), 200)]
+        [ProducesResponseType(400)]
+        public IActionResult GetAll(int exhibitId, DateTimeOffset? Timestamp = null)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var exhibitExist = IsExhibitExist(exhibitId).Result;
+            if (!exhibitExist.Success)
+                return StatusCode(400, exhibitExist.ActionResult);
+
+            if (!UserPermissions.IsAllowedToGetAllActions(User.Identity) || User.Identity.GetUserIdentity() == null)
+                return Forbid();
+
+            var query = _db.Database.GetCollection<Action>(ResourceTypes.Action.Name).AsQueryable();
+
+            var result = query.Where(x => (x.EntityId == exhibitId))
+                              .FilterByTimestamp(Timestamp).ToList()
+                              .Where(x => (x.TypeName == "ExhibitVisited"))
+                              .Select(x => x.CreateActionResult())
+                              .ToList();
+            return Ok(new AllItemsResult<ActionResult>() { Total = result.Count, Items = result });
+        }
+
         protected override async Task<ArgsValidationResult> ValidateActionArgs(ExhibitVisitedActionArgs args)
         {
             //check if the user has visited the exhibit already
@@ -80,11 +109,20 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
                 return new ArgsValidationResult { ActionResult = BadRequest(new { Message = "The user has already visited this exhibit" }) };
             }
 
-            //check if exhibits exists
+            return await IsExhibitExist(args.EntityId);
+        }
+
+        /// <summary>
+        /// check if exhibits exists. Quering DataStore Service for result.
+        /// </summary>
+        /// <param name="id">Id of exhibit</param>
+        /// <returns></returns>
+        private async Task<ArgsValidationResult> IsExhibitExist(int id)
+        {   
             try
             {
                 //this method throws a SwaggerException if the request fails 
-                await _dataStoreService.Exhibits.GetByIdAsync(args.EntityId, null);
+                await _dataStoreService.Exhibits.GetByIdAsync(id, null);
                 return new ArgsValidationResult { Success = true };
             }
             catch (SwaggerException)
