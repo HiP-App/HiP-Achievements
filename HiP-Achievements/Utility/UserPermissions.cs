@@ -51,6 +51,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Utility
             return CheckRoles(identity);
         }
 
+        /// <summary>
+        /// Only Supervisor and Administrator can get all information about Users Actions
+        /// </summary>
+        /// <param name="identity"></param>
+        /// <returns></returns>
+        public static bool IsAllowedToGetAllActions(IIdentity identity)
+        {
+            return CheckRoles(identity);
+        }
+
+
         public static bool IsAllowedToCreateImage(IIdentity identity, string ownerId)
         {
             bool isOwner = ownerId == identity.GetUserIdentity();
