@@ -73,13 +73,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
         /// <summary>
         /// Get all Actions of Exhibit Visited type of all users by exhibit ID
         /// </summary>
-        /// <param name="exhibitId"></param>
-        /// <param name="Timestamp"></param>
         /// <returns></returns>
         [HttpGet("All/{exhibitId}")]
         [ProducesResponseType(typeof(AllItemsResult<ActionResult>), 200)]
         [ProducesResponseType(400)]
-        public IActionResult GetAll(int exhibitId, DateTimeOffset? Timestamp = null)
+        public IActionResult GetAll(int exhibitId, DateTimeOffset? timestamp = null)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -94,7 +92,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             var query = _db.Database.GetCollection<Action>(ResourceTypes.Action.Name).AsQueryable();
 
             var result = query.Where(x => (x.EntityId == exhibitId))
-                              .FilterByTimestamp(Timestamp).ToList()
+                              .FilterByTimestamp(timestamp).ToList()
                               .Where(x => (x.TypeName == "ExhibitVisited"))
                               .Select(x => x.CreateActionResult())
                               .ToList();
