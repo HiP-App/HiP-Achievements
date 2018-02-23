@@ -10,6 +10,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
+using PaderbornUniversity.SILab.Hip.UserStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.ThumbnailService;
@@ -40,6 +41,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             services
                 .Configure<EndpointConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<DataStoreConfig>(Configuration.GetSection("Endpoints"))
+                .Configure<UserStoreConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<ThumbnailConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<EventStoreConfig>(Configuration.GetSection("EventStore"))
                 .Configure<AuthConfig>(Configuration.GetSection("Auth"))
@@ -52,9 +54,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .AddSingleton<CacheDatabaseManager>()
                 .AddSingleton<InMemoryCache>()
                 .AddSingleton<DataStoreService>()
+                .AddSingleton<UserStoreService>()
                 .AddSingleton<ThumbnailService.ThumbnailService>()
-                .AddSingleton<IDomainIndex, EntityIndex>()
-                .AddSingleton<IDomainIndex, ExhibitsVisitedIndex>();
+                .AddSingleton<IDomainIndex, EntityIndex>();
 
             var serviceProvider = services.BuildServiceProvider(); // allows us to actually get the configured services
             var authConfig = serviceProvider.GetService<IOptions<AuthConfig>>();

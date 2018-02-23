@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Events;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Migrations;
@@ -42,20 +41,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
                                 break;
                         }
 
-                        break;
-
-                    case ActionCreated ev:
-                        timestamp = ev.Timestamp;
-                        argumentDictionary[(ev.GetEntityType(), ev.Id)] = ev.Properties;
-                        switch (ev.Properties)
-                        {
-                            case ExhibitVisitedActionArgs args:
-                                e.AppendEvent(new CreatedEvent(ResourceTypes.ExhibitVisitedAction.Name, ev.Id, ev.UserId));
-                                propEvents = EntityManager.CompareEntities(new ExhibitVisitedActionArgs(), 
-                                                                           args, ResourceTypes.ExhibitVisitedAction, ev.Id, ev.UserId);
-                                break;
-
-                        }
                         break;
 
                     case AchievementUpdated ev:
