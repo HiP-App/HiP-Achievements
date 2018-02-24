@@ -168,7 +168,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
-
         public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
@@ -176,10 +175,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
             var achievements = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name)
                                           .AsQueryable()
-                                          .FilterByStatus(AchievementQueryStatus.Published);
+                                          .FilterByStatus(AchievementQueryStatus.Published)
+                                          .ToList();
 
             var actions = await _userStoreService.Actions.GetAllActionsAsync();
-            var exhibitVisitedActions = actions.Items.Where(x => x.Type == "ExhibitVisited");
+            var exhibitVisitedActions = actions.Items.Where(x => x.Type == "ExhibitVisited").ToList();
 
             var unlocked = new List<Achievement>();
             var routes = await _dataStoreService.Routes.GetAsync();
