@@ -36,10 +36,5 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
         {
             Authorization = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
         };
-
-        public ExhibitVisitedClient ExhibitVisitedAction => new ExhibitVisitedClient(_config.AchievementsHost)
-        {
-            Authorization = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"]
-        };
     }
 }
