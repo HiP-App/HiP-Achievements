@@ -41,14 +41,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
     }
 
     /// <remark>
-    ///  If Changed, add to <see cref="AchievementQueryStatus"/> 
+    ///  If Changed, add to <see cref="AchievementQueryStatus"/>
+    ///  Make sure that the same names are used since these are used for mapping between the enums 
     /// </remark>
     public enum AchievementStatus
     {
         [EnumMember(Value = "DRAFT")]
         Draft,
         [EnumMember(Value = "IN_REVIEW")]
-        InReview,
+        In_Review,
         [EnumMember(Value = "PUBLISHED")]
         Published
     }
