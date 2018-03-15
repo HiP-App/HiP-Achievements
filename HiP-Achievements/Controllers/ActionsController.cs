@@ -8,6 +8,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 using ActionResult = PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.ActionResult;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -15,9 +16,9 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class ActionsController : Controller
     {
-        private readonly CacheDatabaseManager _db;
+        private readonly IMongoDbContext _db;
 
-        public ActionsController(CacheDatabaseManager db)
+        public ActionsController(IMongoDbContext db)
         {
             _db = db;
         }
@@ -26,7 +27,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(typeof(AllItemsResult<ActionResult>), 200)]
         public IActionResult GetAllActions()
         {
-            var query = _db.Database.GetCollection<Action>(ResourceTypes.Action.Name).AsQueryable();
+            var query = _db.GetCollection<Action>(ResourceTypes.Action).AsQueryable();
             var userId = User.Identity.GetUserIdentity();
             var result = query.Where(x => x.UserId == userId).ToList()
                               .Select(x => x.CreateActionResult())

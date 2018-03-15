@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using PaderbornUniversity.SILab.Hip.DataStore;
@@ -9,24 +10,23 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementCont
 
     public class RouteFinishedController : AchievementBaseController<RouteFinishedAchievementArgs>
     {
-        private readonly DataStoreService _dataStoreService;
+        private readonly Core.IRoutesClient _routeValidator;
 
-        public RouteFinishedController(EventStoreService eventStore, InMemoryCache cache, DataStoreService dataStoreService) : base(eventStore, cache)
+        public RouteFinishedController(EventStoreService eventStore, InMemoryCache cache, Core.IRoutesClient routeValidator) : base(eventStore, cache)
         {
-            _dataStoreService = dataStoreService;
+            _routeValidator = routeValidator;
         }
 
         protected override ResourceType ResourceType => ResourceTypes.RouteFinishedAchievement;
 
         protected override async Task<ArgsValidationResult> ValidateActionArgs(RouteFinishedAchievementArgs args)
         {
-            try
+            var success = await _routeValidator.ValidateRouteId(args.RouteId.Value);
+            if (success)
             {
-                // ReSharper disable once PossibleInvalidOperationException
-                await _dataStoreService.Routes.GetByIdAsync(args.RouteId.Value);
                 return new ArgsValidationResult { Success = true };
             }
-            catch (SwaggerException)
+            else
             {
                 return new ArgsValidationResult { ActionResult = NotFound(new { Message = "A route with this id doesn't exist" }), Success = false };
             }
