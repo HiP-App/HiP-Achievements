@@ -5,7 +5,6 @@ using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.FakeStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo.Test;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 

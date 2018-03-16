@@ -18,7 +18,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/Achievements/[controller]")]
     public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs, new()
     {
-        private static object _lockObject = new object();
         private readonly EntityIndex _entityIndex;
         private readonly EventStoreService _eventStore;
 

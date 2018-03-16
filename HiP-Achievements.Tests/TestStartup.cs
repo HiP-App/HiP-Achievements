@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NSwag.AspNetCore;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
@@ -23,7 +21,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 
-namespace PaderbornUniversity.SILab.Hip.Achievements
+namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
 {
     public class TestStartup
     {

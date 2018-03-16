@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using System.Linq;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;

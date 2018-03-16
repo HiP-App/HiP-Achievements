@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
-using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
-using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.AchievementControllers

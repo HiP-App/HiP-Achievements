@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;

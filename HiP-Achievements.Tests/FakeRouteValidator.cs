@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 
-namespace PaderbornUniversity.SILab.Hip.Achievements
+namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
 {
     internal class FakeRouteClient : IRoutesClient
     {
