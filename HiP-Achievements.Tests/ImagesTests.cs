@@ -14,16 +14,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
     public class ImagesTests
     {
         private readonly TestServer _server;
-        private readonly FakeEventStore _eventStore;
-        private readonly FakeMongoDbContext _mongoDb;
 
         public const string SampleImagePath = "Assets/Test.png";
 
         public ImagesTests()
         {
             _server = new TestServer(new WebHostBuilder().UseStartup<TestStartup>());
-            _eventStore = (FakeEventStore)_server.Host.Services.GetService<IEventStore>();
-            _mongoDb = (FakeMongoDbContext)_server.Host.Services.GetService<IMongoDbContext>();
         }
 
         [Fact]

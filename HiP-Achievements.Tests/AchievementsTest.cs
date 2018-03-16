@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.FakeStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
@@ -62,7 +64,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
             };
 
             var id = await exhibitsVisitedClient.CreateAchievementAsync(args);
+            Assert.Equal(6, _eventStore.Streams["test"].Events.Count);
+
             var id2 = await routeFinishedClient.CreateAchievementAsync(args2);
+            Assert.Equal(12, _eventStore.Streams["test"].Events.Count);
 
             var achievements = await clientForGet.GetAllAchievementsAsync(new AchievementQueryArgs() { Status = AchievementQueryStatus.All });
 
@@ -70,7 +75,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
             Assert.IsType<ExhibitsVisitedAchievementResult>(achievements.Items[0]);
             Assert.IsType<RouteFinishedAchievementResult>(achievements.Items[1]);
 
+            //try to get the exhibits by their id
+            var exhibitVisitedAchievement = await clientForGet.GetAchievementByIdAsync(id);
+            var routeFinishedAchievement = await clientForGet.GetAchievementByIdAsync(id2);
 
+
+            //check if the MongoDB was updated correctly
+            var cachedExhibitVisitedAchievement = (ExhibitsVisitedAchievement)_mongoDb.Get<Achievement>((ResourceTypes.Achievement, id));
+
+            Assert.Equal(args.Description, cachedExhibitVisitedAchievement.Description);
+            Assert.Equal(args.Title, cachedExhibitVisitedAchievement.Title);
+            Assert.Equal(args.Points, cachedExhibitVisitedAchievement.Points);
+            Assert.Equal(args.Count, cachedExhibitVisitedAchievement.Count);
         }
     }
 }
