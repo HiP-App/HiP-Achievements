@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using PaderbornUniversity.SILab.Hip.EventSourcing;
-using PaderbornUniversity.SILab.Hip.EventSourcing.FakeStore;
-using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
-using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo.Test;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;

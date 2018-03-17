@@ -76,8 +76,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
             Assert.IsType<RouteFinishedAchievementResult>(achievements.Items[1]);
 
             //try to get the exhibits by their id
-            var exhibitVisitedAchievement = await clientForGet.GetAchievementByIdAsync(id);
-            var routeFinishedAchievement = await clientForGet.GetAchievementByIdAsync(id2);
+            await clientForGet.GetAchievementByIdAsync(id);
+            await clientForGet.GetAchievementByIdAsync(id2);
 
 
             //check if the MongoDB was updated correctly

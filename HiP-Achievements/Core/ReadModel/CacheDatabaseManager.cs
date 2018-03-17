@@ -1,5 +1,4 @@
-﻿using MongoDB.Driver;
-using PaderbornUniversity.SILab.Hip.Achievements.Model;
+﻿using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
