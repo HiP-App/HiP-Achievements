@@ -75,6 +75,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel
             {
                 ResourceType type = baseEvent.GetEntityType();
                 if (type.BaseResourceType == ResourceTypes.Achievement) type = ResourceTypes.Achievement;
+                else if (type.BaseResourceType == ResourceTypes.Action) type = ResourceTypes.Action;
 
                 switch (e)
                 {
