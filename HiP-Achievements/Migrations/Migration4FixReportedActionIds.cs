@@ -1,8 +1,6 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Events;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Migrations;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
