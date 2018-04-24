@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
@@ -12,6 +10,7 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
 using System;
 using System.IO;
 using System.Linq;
@@ -25,12 +24,12 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     public class ImageController : Controller
     {
         private readonly EventStoreService _eventStore;
-        private readonly CacheDatabaseManager _db;
+        private readonly IMongoDbContext _db;
         private readonly UploadFilesConfig _filesConfig;
         private readonly EntityIndex _entityIndex;
         private readonly ThumbnailService.ThumbnailService _thumbnailService;
 
-        public ImageController(EventStoreService eventStore, CacheDatabaseManager db,
+        public ImageController(EventStoreService eventStore, IMongoDbContext db,
             IOptions<UploadFilesConfig> filesConfig, InMemoryCache cache,
             ThumbnailService.ThumbnailService thumbnailService)
         {
@@ -94,6 +93,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(FileResult), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public IActionResult GetImageById(int id)
@@ -103,7 +103,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 return BadRequest(ModelState);
             }
 
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable()
+            var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable()
                 .FirstOrDefault(a => a.Id == id);
 
             if (achievement == null)

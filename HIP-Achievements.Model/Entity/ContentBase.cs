@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PaderbornUniversity.SILab.Hip.EventSourcing;
+using System;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Entity
 {

@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NSwag.AspNetCore;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
@@ -16,20 +14,28 @@ using PaderbornUniversity.SILab.Hip.ThumbnailService;
 using PaderbornUniversity.SILab.Hip.Webservice;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Webservice.Logging;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo.Test;
+using PaderbornUniversity.SILab.Hip.EventSourcing.FakeStore;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
-using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
 
-namespace PaderbornUniversity.SILab.Hip.Achievements
+namespace PaderbornUniversity.SILab.Hip.Achievements.Tests
 {
-    public class Startup
+    public class TestStartup
     {
-        public Startup(IHostingEnvironment env)
+        public TestStartup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { "EventStore:Host", "" },
+                    { "EventStore:Stream", "test" },
+                    { "UploadFiles:Path", "Media" },
+                    { "UploadFiles:SupportedFormats:0", "png" }
+                })
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
             ResourceTypes.Initialize();
@@ -46,17 +52,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .Configure<EventStoreConfig>(Configuration.GetSection("EventStore"))
                 .Configure<AuthConfig>(Configuration.GetSection("Auth"))
                 .Configure<UploadFilesConfig>(Configuration.GetSection("UploadFiles"))
-                .Configure<LoggingConfig>(Configuration.GetSection("HiPLoggerConfig"))
                 .Configure<CorsConfig>(Configuration);
 
             services
-                .AddSingleton<IEventStore, EventSourcing.EventStoreLlp.EventStore>()
-                .AddSingleton<IMongoDbContext, MongoDbContext>()
+                .AddSingleton<IEventStore, FakeEventStore>()
+                .AddSingleton<IMongoDbContext, FakeMongoDbContext>()
                 .AddSingleton<EventStoreService>()
                 .AddSingleton<CacheDatabaseManager>()
                 .AddSingleton<InMemoryCache>()
-                .AddSingleton<DataStoreService>()
-                .AddSingleton<IRoutesClient, Core.RoutesClient>()
+                .AddSingleton<IRoutesClient, FakeRouteClient>()
                 .AddSingleton<ThumbnailService.ThumbnailService>()
                 .AddSingleton<IDomainIndex, EntityIndex>()
                 .AddSingleton<IDomainIndex, ExhibitsVisitedIndex>()
@@ -67,12 +71,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
 
             // Configure authentication
             services
-                .AddAuthentication(options => options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.Audience = authConfig.Value.Audience;
-                    options.Authority = authConfig.Value.Authority;
-                });
+                .AddAuthentication(FakeAuthentication.AuthenticationScheme)
+                .AddFakeAuthenticationScheme();
 
             // Configure authorization
             var domain = authConfig.Value.Authority;
@@ -94,32 +94,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             IOptions<CorsConfig> corsConfig, IOptions<EndpointConfig> endpointConfig, IOptions<LoggingConfig> loggingConfig)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"))
-                         .AddDebug()
-                         .AddHipLogger(loggingConfig.Value);
+                         .AddDebug();
 
             // CacheDatabaseManager should start up immediately (not only when injected into a controller or
             // something), so we manually request an instance here
             app.ApplicationServices.GetService<CacheDatabaseManager>();
 
-            // Ensures that "Request.Scheme" is correctly set to "https" in our nginx-environment
-            app.UseRequestSchemeFixer();
-
-            //// Use CORS (important: must be before app.UseMvc())
-            app.UseCors(builder =>
-            {
-                var corsEnvConf = corsConfig.Value.Cors[env.EnvironmentName];
-                builder
-                    .WithOrigins(corsEnvConf.Origins)
-                    .WithMethods(corsEnvConf.Methods)
-                    .WithHeaders(corsEnvConf.Headers)
-                    .WithExposedHeaders(corsEnvConf.ExposedHeaders);
-            });
-
             app.UseAuthentication();
             app.UseMvc();
-            app.UseSwaggerUiHip();
-
-            loggerFactory.CreateLogger("ApplicationStartup").LogInformation("Achievements API started successfully");
         }
     }
 }

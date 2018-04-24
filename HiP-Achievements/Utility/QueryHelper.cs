@@ -1,5 +1,6 @@
 ﻿using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
 using System;
 using System.Collections.Generic;
 using System.Linq;

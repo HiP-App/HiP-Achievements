@@ -17,7 +17,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Authorize]
     [Route("api/Achievements/[controller]")]
     public abstract class AchievementBaseController<TArgs> : BaseController<TArgs> where TArgs : AchievementArgs, new()
-
     {
         private readonly EntityIndex _entityIndex;
         private readonly EventStoreService _eventStore;
@@ -43,7 +42,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             var validationResult = await ValidateActionArgs(args);
             if (!validationResult.Success)
                 return validationResult.ActionResult;
-
             var id = _entityIndex.NextId(ResourceTypes.Achievement);
             await EntityManager.CreateEntityAsync(_eventStore, args, ResourceType, id, User.Identity.GetUserIdentity());
 
