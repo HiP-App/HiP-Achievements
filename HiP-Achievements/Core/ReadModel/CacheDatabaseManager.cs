@@ -1,14 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using MongoDB.Driver;
-using PaderbornUniversity.SILab.Hip.Achievements.Model;
+﻿using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
-using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Events;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
 using System;
 using System.Linq;
 using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
@@ -21,27 +18,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
     public class CacheDatabaseManager
     {
         private readonly EventStoreService _eventStore;
-        private readonly IMongoDatabase _db;
-
-        public IMongoDatabase Database => _db;
+        private readonly IMongoDbContext _db;
 
         public CacheDatabaseManager(
             EventStoreService eventStore,
-            IOptions<EndpointConfig> config,
-            ILogger<CacheDatabaseManager> logger)
+            IMongoDbContext db)
         {
             // For now, the cache database is always created from scratch by replaying all events.
             // This also implies that, for now, the cache database always contains the entire data (not a subset).
             // In order to receive all the events, a Catch-Up Subscription is created.
+            _db = db;
 
-            // 1) Open MongoDB connection and clear existing database
-            var mongo = new MongoClient(config.Value.MongoDbHost);
-            mongo.DropDatabase(config.Value.MongoDbName);
-            _db = mongo.GetDatabase(config.Value.MongoDbName);
-            var uri = new Uri(config.Value.MongoDbHost);
-            logger.LogInformation($"Connected to MongoDB cache database on '{uri.Host}', using database '{config.Value.MongoDbName}'");
-
-            // 2) Subscribe to EventStore to receive all past and future events
+            // Subscribe to EventStore to receive all past and future events
             _eventStore = eventStore;
             _eventStore.EventStream.SubscribeCatchUp(ApplyEvent);
         }
@@ -61,7 +49,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             newAchievement.UserId = e.UserId;
                             newAchievement.LastModifiedBy = e.UserId;
                             newAchievement.Timestamp = e.Timestamp;
-                            _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).InsertOne(newAchievement);
+                            _db.Add(ResourceTypes.Achievement, newAchievement);
                             break;
                         case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Action:
                             var actionArgs = (ActionArgs)Activator.CreateInstance(resourceType.Type, true);
@@ -70,7 +58,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             newAction.UserId = e.UserId;
                             newAction.LastModifiedBy = e.UserId;
                             newAction.Timestamp = e.Timestamp;
-                            _db.GetCollection<Action>(ResourceTypes.Action.Name).InsertOne(newAction);
+                            _db.Add(ResourceTypes.Action, newAction);
                             break;
 
                     }
@@ -82,7 +70,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                     switch (resourceType)
                     {
                         case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Achievement:
-                            var originalAchievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().First(a => a.Id == e.Id);
+                            var originalAchievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable().First(a => a.Id == e.Id);
                             var achievementArgs = originalAchievement.CreateAchievementArgs();
                             e.ApplyTo(achievementArgs);
                             var updatedAchievement = (Achievement)Activator.CreateInstance(originalAchievement.GetType(), achievementArgs);
@@ -91,11 +79,11 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             updatedAchievement.UserId = originalAchievement.UserId;
                             updatedAchievement.Id = e.Id;
                             updatedAchievement.Filename = originalAchievement.Filename;
-                            _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, updatedAchievement);
+                            _db.Replace((ResourceTypes.Achievement, e.Id), updatedAchievement);
                             break;
 
                         case ResourceType _ when resourceType.BaseResourceType == ResourceTypes.Action:
-                            var originalAction = _db.GetCollection<Action>(ResourceTypes.Action.Name).AsQueryable().First(a => a.Id == e.Id);
+                            var originalAction = _db.GetCollection<Action>(ResourceTypes.Action).AsQueryable().First(a => a.Id == e.Id);
                             var actionArgs = originalAction.CreateActionArgs();
                             e.ApplyTo(actionArgs);
                             var updatedAction = (Action)Activator.CreateInstance(originalAction.GetType(), actionArgs);
@@ -103,22 +91,22 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel
                             updatedAction.Timestamp = e.Timestamp;
                             updatedAction.UserId = originalAction.UserId;
                             updatedAction.Id = originalAction.Id;
-                            _db.GetCollection<Action>(ResourceTypes.Action.Name).ReplaceOne(a => a.Id == e.Id, updatedAction);
+                            _db.Replace((ResourceTypes.Action, e.Id), updatedAction);
                             break;
                     }
                     break;
 
                 case DeletedEvent e:
-                    _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).DeleteOne(a => a.Id == e.Id);
+                    _db.Delete((ResourceTypes.Achievement, e.Id));
                     break;
 
                 case AchievementImageUpdated e:
-                    var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable()
+                    var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable()
                         .FirstOrDefault(a => a.Id == e.Id);
                     if (achievement != null)
                     {
                         achievement.Filename = e.File;
-                        _db.GetCollection<Achievement>(ResourceTypes.Achievement.Name).ReplaceOne(a => a.Id == e.Id, achievement);
+                        _db.Replace((ResourceTypes.Achievement, e.Id), achievement);
                     }
                     break;
 

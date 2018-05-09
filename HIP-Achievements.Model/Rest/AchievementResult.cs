@@ -1,13 +1,19 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using NJsonSchema.Converters;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
+using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Achievements;
 using System;
+using System.Runtime.Serialization;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
 {
     /// <summary>
     /// Model for returning Achievements, derived class is used if additional properties need to be returned 
     /// </summary>
+    [JsonConverter(typeof(JsonInheritanceConverter), "discriminator")]
+    [KnownType(typeof(ExhibitsVisitedAchievementResult))]
+    [KnownType(typeof(RouteFinishedAchievementResult))]
     public abstract class AchievementResult
     {
         public int Id { get; set; }
@@ -30,7 +36,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Model.Rest
         public string UserId { get; set; }
 
         public DateTimeOffset Timestamp { get; set; }
-        
+
         public AchievementResult()
         {
         }

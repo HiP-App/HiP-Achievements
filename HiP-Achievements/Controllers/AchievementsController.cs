@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.ReadModel;
+using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Entity;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
-using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
 using PaderbornUniversity.SILab.Hip.UserStore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -23,19 +23,18 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     public class AchievementsController : Controller
     {
         private readonly EventStoreService _eventStore;
-        private readonly CacheDatabaseManager _db;
+        private readonly IMongoDbContext _db;
         private readonly EntityIndex _entityIndex;
-        private readonly DataStoreService _dataStoreService;
-        private readonly UserStoreService _userStoreService;
+        private readonly IRoutesClient _routesClient;
         private readonly ThumbnailService.ThumbnailService _thumbnailService;
 
-        public AchievementsController(EventStoreService eventStore, CacheDatabaseManager db,
-            InMemoryCache cache, DataStoreService dataStoreService, UserStoreService userStoreService,
+        public AchievementsController(EventStoreService eventStore, IMongoDbContext db,
+            InMemoryCache cache, IRoutesClient routesClient,
             ThumbnailService.ThumbnailService thumbnailService)
         {
             _eventStore = eventStore;
             _db = db;
-            _dataStoreService = dataStoreService;
+            _routesClient = routesClient;
             _thumbnailService = thumbnailService;
             _userStoreService = userStoreService;
             _entityIndex = cache.Index<EntityIndex>();
@@ -50,7 +49,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             var userIdendity = User.Identity.GetUserIdentity();
 
             Enum.TryParse<AchievementStatus>(status.ToString(), out var achievementStatus);
-            var query = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable();
+            var query = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable();
             var achievements = query
                 .FilterIf(!isAllowedGetAll, x =>
                     (status == AchievementQueryStatus.All && x.Status == AchievementStatus.Published) ||
@@ -71,7 +70,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var achievements = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable();
+            var achievements = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable();
 
             var query = achievements
                    .FilterByIds(args.Exclude, args.IncludeOnly)
@@ -114,7 +113,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().FirstOrDefault(a => a.Id == id);
+            var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable().FirstOrDefault(a => a.Id == id);
 
             if (achievement == null)
             {
@@ -144,7 +143,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!_entityIndex.Exists(ResourceTypes.Achievement, id))
                 return NotFound();
 
-            var achievement = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name).AsQueryable().First(a => a.Id == id);
+            var achievement = _db.GetCollection<Achievement>(ResourceTypes.Achievement).AsQueryable().First(a => a.Id == id);
 
             if (!UserPermissions.IsAllowedToDelete(User.Identity, achievement.Status, achievement.UserId))
                 return Forbid();
@@ -173,16 +172,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var achievements = _db.Database.GetCollection<Achievement>(ResourceTypes.Achievement.Name)
+            var achievements = _db.GetCollection<Achievement>(ResourceTypes.Achievement)
                                           .AsQueryable()
-                                          .FilterByStatus(AchievementQueryStatus.Published)
-                                          .ToList();
+                                          .FilterByStatus(AchievementQueryStatus.Published);
 
             var actions = await _userStoreService.Actions.GetAllActionsAsync();
             var exhibitVisitedActions = actions.Items.Where(x => x.Type == "ExhibitVisited").ToList();
 
             var unlocked = new List<Achievement>();
-            var routes = await _dataStoreService.Routes.GetAsync();
+            var routes = await _routesClient.GetRoutes();
 
             foreach (var achievement in achievements)
             {
@@ -197,8 +195,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
 
                     case RouteFinishedAchievement e:
-                        var visitedExhibitsIds = exhibitVisitedActions.Select(x => x.EntityId).ToList();
-                        if (routes.Items.Any(r => r.Id == e.RouteId && r.Exhibits.IsSubsetOf(visitedExhibitsIds)))
+                        var visitedExhibitsIds = actions.OfType<ExhibitVisitedAction>().Select(x => x.EntityId).ToList();
+                        if (routes.Any(r => r.RouteId == e.RouteId && r.ExhibitIds.IsSubsetOf(visitedExhibitsIds)))
                         {
                             unlocked.Add(e);
                         }
