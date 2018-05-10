@@ -10,7 +10,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
 {
     public class ExhibitVisitedController : ActionBaseController<ExhibitVisitedActionArgs>
     {
-        protected readonly new UserStoreService _userStoreService;
+        private readonly new UserStoreService _userStoreService;
 
         public ExhibitVisitedController(UserStoreService userStoreService) : base(userStoreService)
         {
