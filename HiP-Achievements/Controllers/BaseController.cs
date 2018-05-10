@@ -8,13 +8,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     public abstract class BaseController<TArgs> : Controller
     {
         /// <summary>
-        /// Determines whether the provided arguments are valid according to the specific requirements 
-        /// </summary>
-        /// <param name="args">Arguments to be validated</param>
-        /// <returns>Validation result</returns>
-        protected abstract Task<ArgsValidationResult> ValidateActionArgs(TArgs args);
-
-        /// <summary>
         /// ResourceType that should be used to create new entities
         /// </summary>
         protected abstract ResourceType ResourceType { get; }

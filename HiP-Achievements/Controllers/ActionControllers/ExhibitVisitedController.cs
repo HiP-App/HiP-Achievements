@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
-    public class ExhibitVisitedController : ActionBaseController<UserStore.ExhibitVisitedActionArgs>
+    public class ExhibitVisitedController : ActionBaseController<ExhibitVisitedActionArgs>
     {
-        protected readonly UserStoreService _userStoreService;
+        protected readonly new UserStoreService _userStoreService;
 
         public ExhibitVisitedController(UserStoreService userStoreService) : base(userStoreService)
         {
@@ -32,23 +32,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = -1;
             try
             {
-                result = await _userStoreService.ExhibitVisitedAction.PostManyAsync(args);
+                var result = await _userStoreService.ExhibitVisitedAction.PostManyAsync(args);
+                return StatusCode(201, result.ToString());
             }
             catch (SwaggerException ex)
             {
                 return StatusCode(Int32.Parse(ex.StatusCode), ex.Response.Substring(1, ex.Response.Length - 2));
             }
-
-            return StatusCode(201, result.ToString());
-            
-        }
-
-        protected override async Task<ArgsValidationResult> ValidateActionArgs(ExhibitVisitedActionArgs args)
-        {
-            return null;
         }
     }
 }

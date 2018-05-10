@@ -40,19 +40,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (User.Identity.GetUserIdentity() == null)
                 return Forbid();
 
-            var id = -1;
             try
             {
-                id = await _userStoreService.ExhibitVisitedAction.PostAsync(new UserStore.ExhibitVisitedActionArgs() { EntityId = args.EntityId });
+                var id = await _userStoreService.ExhibitVisitedAction.PostAsync(new ExhibitVisitedActionArgs() { EntityId = args.EntityId });
+                return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
             }
             catch (SwaggerException ex)
             {
                 return StatusCode(Int32.Parse(ex.StatusCode), ex.Response);
             }
-
-            return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
         }
-
     }
-
 }
