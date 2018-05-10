@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
-using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
-using PaderbornUniversity.SILab.Hip.EventSourcing;
-using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.UserStore;
 using System;
 using System.Threading.Tasks;
+using ActionArgs = PaderbornUniversity.SILab.Hip.UserStore.ActionArgs;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -21,15 +18,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs, new()
     {
         // ReSharper disable All
-        protected readonly EntityIndex _entityIndex;
-        protected readonly EventStoreService _eventStore;
+        protected readonly UserStoreService _userStoreService;
         // ReSharper Restore All
 
 
-        public ActionBaseController(EventStoreService eventStore, InMemoryCache cache)
+        public ActionBaseController(UserStoreService userStoreService)
         {
-            _eventStore = eventStore;
-            _entityIndex = cache.Index<EntityIndex>();
+            _userStoreService = userStoreService;
         }
 
         [Obsolete("Use UserStore instead")]
@@ -45,12 +40,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (User.Identity.GetUserIdentity() == null)
                 return Forbid();
 
-            var validationResult = await ValidateActionArgs(args);
-            if (!validationResult.Success)
-                return validationResult.ActionResult;
+            var id = -1;
+            try
+            {
+                id = await _userStoreService.ExhibitVisitedAction.PostAsync(new UserStore.ExhibitVisitedActionArgs() { EntityId = args.EntityId });
+            }
+            catch (SwaggerException ex)
+            {
+                return StatusCode(Int32.Parse(ex.StatusCode), ex.Response);
+            }
 
-            var id = _entityIndex.NextId(ResourceTypes.Action);
-            await EntityManager.CreateEntityAsync(_eventStore, args, ResourceType, id, User.Identity.GetUserIdentity());
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
         }
 

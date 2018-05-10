@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -27,9 +26,10 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EntityIndex _entityIndex;
         private readonly IRoutesClient _routesClient;
         private readonly ThumbnailService.ThumbnailService _thumbnailService;
+        private readonly UserStoreService _userStoreService;
 
         public AchievementsController(EventStoreService eventStore, IMongoDbContext db,
-            InMemoryCache cache, IRoutesClient routesClient,
+            InMemoryCache cache, IRoutesClient routesClient, UserStoreService userStoreService,
             ThumbnailService.ThumbnailService thumbnailService)
         {
             _eventStore = eventStore;
@@ -195,7 +195,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
 
                     case RouteFinishedAchievement e:
-                        var visitedExhibitsIds = actions.OfType<ExhibitVisitedAction>().Select(x => x.EntityId).ToList();
+                        var visitedExhibitsIds = exhibitVisitedActions.Select(x => x.EntityId).ToList();
                         if (routes.Any(r => r.RouteId == e.RouteId && r.ExhibitIds.IsSubsetOf(visitedExhibitsIds)))
                         {
                             unlocked.Add(e);
