@@ -27,13 +27,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _entityIndex = cache.Index<EntityIndex>();
         }
 
-        /// <summary>
-        /// Determines whether the provided arguments are valid according to the specific requirements 
-        /// </summary>
-        /// <param name="args">Arguments to be validated</param>
-        /// <returns>Validation result</returns>
-        protected abstract Task<ArgsValidationResult> ValidateActionArgs(TArgs args);
-
         [HttpPost]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]

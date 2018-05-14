@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
+using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
-using PaderbornUniversity.SILab.Hip.UserStore;
+using PaderbornUniversity.SILab.Hip.EventSourcing;
+using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using System;
 using System.Threading.Tasks;
 using ActionArgs = PaderbornUniversity.SILab.Hip.UserStore.ActionArgs;
@@ -18,13 +21,15 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs, new()
     {
         // ReSharper disable All
-        protected readonly UserStoreService _userStoreService;
+        protected readonly EventStoreService _eventStore;
+        protected readonly EntityIndex _entityIndex;
         // ReSharper Restore All
 
 
-        public ActionBaseController(UserStoreService userStoreService)
+        public ActionBaseController(EventStoreService eventStore, InMemoryCache cache)
         {
-            _userStoreService = userStoreService;
+            _eventStore = eventStore;
+            _entityIndex = cache.Index<EntityIndex>();
         }
 
         [Obsolete("Use UserStore instead")]
@@ -32,7 +37,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Post([FromBody] TArgs args)
+        public virtual async Task<IActionResult> Post([FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -40,15 +45,13 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (User.Identity.GetUserIdentity() == null)
                 return Forbid();
 
-            try
-            {
-                var id = await _userStoreService.ExhibitVisitedAction.PostAsync(new ExhibitVisitedActionArgs() { EntityId = args.EntityId });
-                return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
-            }
-            catch (SwaggerException ex)
-            {
-                return StatusCode(Int32.Parse(ex.StatusCode), ex.Response);
-            }
+            var validationResult = await ValidateActionArgs(args);
+            if (!validationResult.Success)
+                return validationResult.ActionResult;
+
+            var id = _entityIndex.NextId(ResourceTypes.Action);
+            await EntityManager.CreateEntityAsync(_eventStore, args, ResourceType, id, User.Identity.GetUserIdentity());
+            return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
         }
     }
 }
