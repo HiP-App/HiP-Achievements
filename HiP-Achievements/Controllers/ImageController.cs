@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FileStream = System.IO.FileStream;
-using Newtonsoft.Json;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
