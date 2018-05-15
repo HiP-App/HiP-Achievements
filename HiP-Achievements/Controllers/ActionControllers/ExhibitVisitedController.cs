@@ -74,16 +74,16 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
 
         protected override async Task<ArgsValidationResult> ValidateActionArgs(ExhibitVisitedActionArgs args)
         {
-            //check if the user has visited the exhibit already
+            //Check if the user has visited the exhibit already
             if (_index.Exists(User.Identity.GetUserIdentity(), args.EntityId))
             {
                 return new ArgsValidationResult { ActionResult = BadRequest(new { Message = "The user has already visited this exhibit" }) };
             }
 
-            //check if exhibits exists
+            //Check if exhibits exists
             try
             {
-                //this method throws a SwaggerException if the request fails 
+                //This method throws a SwaggerException if the request fails 
                 await _dataStoreService.Exhibits.GetByIdAsync(args.EntityId, null);
                 return new ArgsValidationResult { Success = true };
             }
