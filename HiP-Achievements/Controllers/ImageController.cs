@@ -112,7 +112,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             if (!System.IO.File.Exists(achievement.Filename))
                 return NotFound(new { Message = "The image could not be found" });
 
-            //figure out the mime type
+            //Figure out the mime type
             new FileExtensionContentTypeProvider().TryGetContentType(achievement.Filename, out string mimeType);
             mimeType = mimeType ?? "application/octet-stream";
             return File(new FileStream(achievement.Filename, FileMode.Open), mimeType, Path.GetFileName(achievement.Filename));
