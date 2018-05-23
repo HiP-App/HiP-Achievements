@@ -5,7 +5,6 @@ using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
-using System;
 using System.Threading.Tasks;
 using ActionArgs = PaderbornUniversity.SILab.Hip.UserStore.ActionArgs;
 
