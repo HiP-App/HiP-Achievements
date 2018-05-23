@@ -32,7 +32,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             _entityIndex = cache.Index<EntityIndex>();
         }
 
-        [Obsolete("Use UserStore instead")]
         [HttpPost]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
