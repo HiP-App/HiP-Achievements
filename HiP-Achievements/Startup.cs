@@ -19,6 +19,7 @@ using PaderbornUniversity.SILab.Hip.Webservice.Logging;
 using Microsoft.AspNetCore.Http;
 using PaderbornUniversity.SILab.Hip.Achievements.Core;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
+using PaderbornUniversity.SILab.Hip.UserStore;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements
 {
@@ -42,6 +43,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
             services
                 .Configure<EndpointConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<DataStoreConfig>(Configuration.GetSection("Endpoints"))
+                .Configure<UserStoreConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<ThumbnailConfig>(Configuration.GetSection("Endpoints"))
                 .Configure<EventStoreConfig>(Configuration.GetSection("EventStore"))
                 .Configure<AuthConfig>(Configuration.GetSection("Auth"))
@@ -56,6 +58,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements
                 .AddSingleton<CacheDatabaseManager>()
                 .AddSingleton<InMemoryCache>()
                 .AddSingleton<DataStoreService>()
+                .AddSingleton<UserStoreService>()
                 .AddSingleton<IRoutesClient, Core.RoutesClient>()
                 .AddSingleton<ThumbnailService.ThumbnailService>()
                 .AddSingleton<IDomainIndex, EntityIndex>()

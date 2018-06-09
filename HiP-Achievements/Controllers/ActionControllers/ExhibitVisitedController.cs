@@ -1,35 +1,60 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Events;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.Actions;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.DataStore;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using PaderbornUniversity.SILab.Hip.UserStore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+
 using System.Threading.Tasks;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControllers
 {
     public class ExhibitVisitedController : ActionBaseController<ExhibitVisitedActionArgs>
     {
+        private readonly UserStoreService _userStoreService;
         private readonly ExhibitsVisitedIndex _index;
         private readonly DataStoreService _dataStoreService;
 
-        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, DataStoreService dataStoreService) : base(eventStore, cache)
+        public ExhibitVisitedController(EventStoreService eventStore, InMemoryCache cache, DataStoreService dataStoreService, UserStoreService userStoreService) : base(eventStore, cache)
         {
+            _userStoreService = userStoreService;
             _index = cache.Index<ExhibitsVisitedIndex>();
             _dataStoreService = dataStoreService;
         }
 
         protected override ResourceType ResourceType => ResourceTypes.ExhibitVisitedAction;
 
+        [Obsolete("Use UserStore instead")]
+        [HttpPost]
+        [ProducesResponseType(typeof(int), 201)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        public override async Task<IActionResult> Post([FromBody] ExhibitVisitedActionArgs args)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (User.Identity.GetUserIdentity() == null)
+                return Forbid();
+
+            try
+            {
+                var id = await _userStoreService.ExhibitVisitedAction.PostAsync(new ExhibitVisitedActionArgs() { EntityId = args.EntityId });
+                return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
+            }
+            catch (UserStore.SwaggerException ex)
+            {
+                return StatusCode(int.Parse(ex.StatusCode), ex.Response);
+            }
+        }
+
         /// <summary>
         /// Posts multiple ExhibitVisistedActions
         /// </summary>
+        [Obsolete("Use UserStore instead")]
         [HttpPost("Many")]
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
@@ -39,36 +64,14 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var argList = args.ToListActionArgs();
-            var validationResultList = new List<(int, ArgsValidationResult)>();
-
-            foreach (var arg in argList)
+            try
             {
-                validationResultList.Add((arg.EntityId, await ValidateActionArgs((ExhibitVisitedActionArgs)arg)));
-                if (!validationResultList.Last().Item2.Success)
-                {
-                    continue;
-                }
-
-                var ev = new ActionCreated
-                {
-                    Id = _entityIndex.NextId(ResourceTypes.Action),
-                    UserId = User.Identity.GetUserIdentity(),
-                    Properties = arg,
-                    Timestamp = DateTimeOffset.Now
-                };
-
-                await _eventStore.AppendEventAsync(ev);
+                var result = await _userStoreService.ExhibitVisitedAction.PostManyAsync(args);
+                return StatusCode(201, result.ToString());
             }
-            if (validationResultList.Any(x => x.Item2.Success))
+            catch (UserStore.SwaggerException ex)
             {
-                return StatusCode(201, String.Join(',', validationResultList.FindAll(x => x.Item2.Success)
-                                                                            .Select(x => x.Item1)
-                                                                            .ToArray()));
-            }
-            else
-            {
-                return StatusCode(400, String.Join(',', validationResultList.Select(x => x.Item1).ToArray()));
+                return StatusCode(int.Parse(ex.StatusCode), ex.Response.Substring(1, ex.Response.Length - 2));
             }
         }
 
@@ -87,7 +90,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers.ActionControlle
                 await _dataStoreService.Exhibits.GetByIdAsync(args.EntityId, null);
                 return new ArgsValidationResult { Success = true };
             }
-            catch (SwaggerException)
+            catch (DataStore.SwaggerException)
             {
                 return new ArgsValidationResult { ActionResult = NotFound(new { Message = "An exhibit with this id doesn't exist" }), Success = false };
             }

@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using PaderbornUniversity.SILab.Hip.Achievements.Core.WriteModel;
 using PaderbornUniversity.SILab.Hip.Achievements.Model;
-using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
 using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
-using System.Threading.Tasks;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
+using System.Threading.Tasks;
+using ActionArgs = PaderbornUniversity.SILab.Hip.UserStore.ActionArgs;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -20,8 +20,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     public abstract class ActionBaseController<TArgs> : BaseController<TArgs> where TArgs : ActionArgs, new()
     {
         // ReSharper disable All
-        protected readonly EntityIndex _entityIndex;
         protected readonly EventStoreService _eventStore;
+        protected readonly EntityIndex _entityIndex;
         // ReSharper Restore All
 
 
@@ -35,7 +35,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [ProducesResponseType(typeof(int), 201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<IActionResult> Post([FromBody] TArgs args)
+        public virtual async Task<IActionResult> Post([FromBody] TArgs args)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -51,7 +51,5 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
             await EntityManager.CreateEntityAsync(_eventStore, args, ResourceType, id, User.Identity.GetUserIdentity());
             return Created($"{Request.Scheme}://{Request.Host}/api/Action/{id}", id);
         }
-
     }
-
 }

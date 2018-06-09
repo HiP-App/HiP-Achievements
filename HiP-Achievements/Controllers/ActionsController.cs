@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using PaderbornUniversity.SILab.Hip.Achievements.Model;
 using PaderbornUniversity.SILab.Hip.Achievements.Model.Rest;
-using PaderbornUniversity.SILab.Hip.Achievements.Utility;
-using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
-using ActionResult = PaderbornUniversity.SILab.Hip.Achievements.Model.Rest.ActionResult;
-using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
+using PaderbornUniversity.SILab.Hip.UserStore;
+using System;
+using System.Threading.Tasks;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -14,23 +11,20 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
     [Route("api/[controller]")]
     public class ActionsController : Controller
     {
-        private readonly IMongoDbContext _db;
+        private readonly UserStoreService _userStoreService;
 
-        public ActionsController(IMongoDbContext db)
+        public ActionsController(UserStoreService userStoreService)
         {
-            _db = db;
+            _userStoreService = userStoreService;
         }
 
+        [Obsolete("Use UserStore instead")]
         [HttpGet]
-        [ProducesResponseType(typeof(AllItemsResult<ActionResult>), 200)]
-        public IActionResult GetAllActions()
+        [ProducesResponseType(typeof(AllItemsResult<UserStore.ActionResult>), 200)]
+        public async Task<IActionResult> GetAllActionsAsync()
         {
-            var query = _db.GetCollection<Action>(ResourceTypes.Action).AsQueryable();
-            var userId = User.Identity.GetUserIdentity();
-            var result = query.Where(x => x.UserId == userId).ToList()
-                              .Select(x => x.CreateActionResult())
-                              .ToList();
-            return Ok(new AllItemsResult<ActionResult>() { Total = result.Count, Items = result });
+            var actions = await _userStoreService.Actions.GetAllActionsAsync();
+            return Ok(actions);
         }
     }
 }

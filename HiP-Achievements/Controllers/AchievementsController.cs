@@ -9,11 +9,11 @@ using PaderbornUniversity.SILab.Hip.Achievements.Utility;
 using PaderbornUniversity.SILab.Hip.EventSourcing;
 using PaderbornUniversity.SILab.Hip.EventSourcing.EventStoreLlp;
 using PaderbornUniversity.SILab.Hip.EventSourcing.Mongo;
+using PaderbornUniversity.SILab.Hip.UserStore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Action = PaderbornUniversity.SILab.Hip.Achievements.Model.Entity.Action;
 
 namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 {
@@ -26,15 +26,17 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         private readonly EntityIndex _entityIndex;
         private readonly IRoutesClient _routesClient;
         private readonly ThumbnailService.ThumbnailService _thumbnailService;
+        private readonly UserStoreService _userStoreService;
 
         public AchievementsController(EventStoreService eventStore, IMongoDbContext db,
-            InMemoryCache cache, IRoutesClient routesClient,
+            InMemoryCache cache, IRoutesClient routesClient, UserStoreService userStoreService,
             ThumbnailService.ThumbnailService thumbnailService)
         {
             _eventStore = eventStore;
             _db = db;
             _routesClient = routesClient;
             _thumbnailService = thumbnailService;
+            _userStoreService = userStoreService;
             _entityIndex = cache.Index<EntityIndex>();
         }
 
@@ -165,7 +167,6 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
         [HttpGet("Unlocked")]
         [ProducesResponseType(typeof(AllItemsResult<AchievementResult>), 200)]
         [ProducesResponseType(400)]
-
         public async Task<IActionResult> GetUnlocked()
         {
             if (!ModelState.IsValid)
@@ -175,9 +176,8 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                                           .AsQueryable()
                                           .FilterByStatus(AchievementQueryStatus.Published);
 
-            var actions = _db.GetCollection<Action>(ResourceTypes.Action)
-                                          .AsQueryable()
-                                          .Where(x => x.UserId == User.Identity.GetUserIdentity());
+            var actions = await _userStoreService.Actions.GetAllActionsAsync();
+            var exhibitVisitedActions = actions.Items.Where(x => x.Type == "ExhibitVisited").ToList();
 
             var unlocked = new List<Achievement>();
             var routes = await _routesClient.GetRoutes();
@@ -187,7 +187,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
                 switch (achievement)
                 {
                     case ExhibitsVisitedAchievement e:
-                        if (e.Count <= actions.Where(x => x is ExhibitVisitedAction).ToList().Count)
+                        if (e.Count <= exhibitVisitedActions.ToList().Count)
                         {
                             unlocked.Add(e);
                         }
@@ -195,7 +195,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Controllers
 
 
                     case RouteFinishedAchievement e:
-                        var visitedExhibitsIds = actions.OfType<ExhibitVisitedAction>().Select(x => x.EntityId).ToList();
+                        var visitedExhibitsIds = exhibitVisitedActions.Select(x => x.EntityId).ToList();
                         if (routes.Any(r => r.RouteId == e.RouteId && r.ExhibitIds.IsSubsetOf(visitedExhibitsIds)))
                         {
                             unlocked.Add(e);
