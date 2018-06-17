@@ -21,7 +21,7 @@ namespace PaderbornUniversity.SILab.Hip.Achievements.Migrations
             while (await events.MoveNextAsync())
             {
                 IEnumerable<PropertyChangedEvent> propEvents = new List<PropertyChangedEvent>();
-                DateTimeOffset timestamp;
+                DateTimeOffset timestamp=new DateTimeOffset();
                 switch (events.Current)
                 {
                     case AchievementCreated ev:
