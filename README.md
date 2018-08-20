@@ -19,3 +19,4 @@ Microservice for managing achievements and tracking user actions.
   * via Terminal: Execute `dotnet run` from the project folder containing `HiP-Achievements.csproj`
 
 The app is preconfigured to run on dev machines with minimal manual configuration. See [appsettings.json](https://github.com/HiP-App/HiP-Achievements/blob/develop/HiP-Achievements/appsettings.json) for a list of configuration fields and their default values.
+To be able to provide test values for local development, make a copy of the appsettings.json and rename it to `appsettings.Development.json` (see [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/environments?view=aspnetcore-2.1) for more information) 
